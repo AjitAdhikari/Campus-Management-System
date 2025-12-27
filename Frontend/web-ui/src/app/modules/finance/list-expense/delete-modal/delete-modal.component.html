@@ -1,0 +1,23 @@
+<button type="button" class="btn btn-danger mr-2" data-bs-toggle="modal" data-bs-target="#deleteModel">
+  Delete Data
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="deleteModel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Delete Particular Date Data</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="date" class="form-control" [(ngModel)]="deleteDate" >
+        Selected Date: {{deleteDate}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button"  class="btn btn-danger"  data-bs-dismiss="modal" (click)="deleteData(deleteDate)">Delete Now</button>
+      </div>
+    </div>
+  </div>
+</div>

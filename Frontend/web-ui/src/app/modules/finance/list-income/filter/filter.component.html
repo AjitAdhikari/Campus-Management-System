@@ -1,0 +1,32 @@
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-info mr-2" data-bs-toggle="modal" data-bs-target="#filterrModal">
+    Filter
+  </button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="filterrModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Filter</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-4">
+              <label class="filter-label" >Start Date:</label>
+              <input type="date" class="form-control mb-2 me-sm-2" [(ngModel)]="filterModel.startDate"  />
+            </div>
+            <div class="col-4">
+              <label class="filter-label" >End Date:</label>
+              <input type="date" class="form-control mb-2 me-sm-2" [(ngModel)]="filterModel.endDate"  />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button"  class="btn btn-primary"  data-bs-dismiss="modal" (click)="onSubmit()">Search</button>
+        </div>
+      </div>
+    </div>
+  </div>

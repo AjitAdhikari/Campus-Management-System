@@ -1,0 +1,86 @@
+<div class="row mb-2 mb-xl-3">
+  <div class="col-auto d-none d-sm-block">
+    <h3><strong>List</strong> Inventory</h3>
+  </div>
+
+  <div class="col-auto ms-auto text-end mt-n1">
+    <button type="button" (click)="searchFormToggle()"
+    class="btn-shadow btn btn-info mr-2">
+     Filter
+   </button>
+    <a href="/inventory/add" class="btn btn-primary">Add Inventory</a>
+  </div>
+</div>
+<app-loader class="loader-outer"  *ngIf="isLoading" ></app-loader>
+<div class="row"  *ngIf="!isLoading">
+  <app-filter (filterModelData) = 'updateFilter($event)' [iSearchFormDisplay]="SearchFormDisplay"></app-filter>
+  <div class="col-lg-12">
+    <div class="main-card mb-3 card">
+      <div class="card-body">
+        <div *ngIf="data == undefined; else listTable">
+          <p><em>Loading...</em></p>
+        </div>
+      <ng-template #listTable>
+        <div class="table-page"><p><span>{{currentPage}}</span> of {{totalPages}} page(s)</p></div>
+        <table class="mb-0 table my-table" >
+          <thead>
+            <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0" role="row">
+              <th>SN</th>
+              <th>Image</th>
+              <th  (click)="sortTable('name')">Name</th>
+              <th >SKU Code</th>
+              <th >Quantity</th>
+              <th  (click)="sortTable('createdDate')">Created Date</th>
+              <th >Actions</th>
+            </tr>
+          </thead>
+          <tbody class="fw-semibold text-gray-600">
+            <tr *ngFor="let item of data; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td><img src="{{item.image}}" class="table-image"></td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.code }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.created_at | date: 'dd MMM yyyy, h:mm a' }}</td>
+              <td class="table-action">
+                <a routerLink="/inventory/edit/{{item.id}}" title="Edit" class="btn mr-2" ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 align-middle"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                <a (click)="delete(item.id, i)" class="btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash align-middle"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+              </td>
+            </tr>
+          </tbody>
+      <ng-template #ShowItem>
+        <p>No Data Found</p>
+      </ng-template>
+    </table>
+    <div class="pagination mt-2">
+      <!-- <span>
+        Pagination:  <input class="col-4 pagination-input" #textInput (input)="Pagination(textInput.value)"
+        (change)="value" ng-init="1" name="offset" type="number" min="1">
+        Total Page: {{model.totalPages}}
+      </span> -->
+      <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" *ngIf="(currentPage - 1 > totalPages)"><a class="page-link"
+            (click)="onPageChange(currentPage - 1)"
+            >Previous</a></li>
+          <li class="page-item" *ngFor="let page of getPages()">
+            <a class="page-link" (click)="onPageChange(page)">{{page}}</a>
+          </li>
+            <li class="page-item" *ngIf="(currentPage + 1 < totalPages)"><a class="page-link" (click)="onPageChange(currentPage + 1)">Next</a></li>
+
+        </ul>
+      </nav>
+  </div>
+    <!-- <div class="pagination">
+      <span>
+        Pagination:  <input class="col-4 pagination-input" #textInput (input)="Pagination(textInput.value)"
+        (change)="value" ng-init="1" name="offset" type="number" min="1">
+        Total Page: {{listData.totalPages}}
+      </span>
+  </div> -->
+  </ng-template>
+  </div>
+  </div>
+  </div>
+</div>
+

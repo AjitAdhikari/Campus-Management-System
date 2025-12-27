@@ -1,0 +1,83 @@
+<nav id="sidebar" class="sidebar js-sidebar">
+  <div class="sidebar-content js-simplebar" data-simplebar="init">
+    <div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: 100%; overflow: hidden scroll;"><div class="simplebar-content" style="padding: 0px;">
+    <a class="sidebar-brand" href="/">
+      <span class="sidebar-brand-text align-middle">
+       ChMS
+        <sup><small class="badge bg-primary text-uppercase">Beta</small></sup>
+      </span>
+    </a>
+
+
+    <ul class="sidebar-nav">
+      <li class="sidebar-header">
+        Pages
+      </li>
+      <li class="sidebar-item">
+        <a  class="sidebar-link" href="/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sliders align-middle"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          <span class="align-middle">Dashboard</span>
+        </a>
+      </li>
+
+      <li class="sidebar-item">
+        <a data-bs-target="#dashboards" data-bs-toggle="collapse" class="sidebar-link collapsed">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users align-middle me-2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span class="align-middle">Members</span>
+        </a>
+        <ul id="dashboards" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+          <li class="sidebar-item"><a class="sidebar-link" href="/member">List</a></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="/member/add">Add</a></li>
+        </ul>
+      </li>
+
+      <li class="sidebar-item">
+        <a data-bs-target="#pages" data-bs-toggle="collapse" class="sidebar-link collapsed">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-bag align-middle me-2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+           <span class="align-middle">Inventories</span>
+        </a>
+        <ul id="pages" class="sidebar-dropdown list-unstyled collapse " data-bs-parent="#sidebar">
+          <li class="sidebar-item"><a class="sidebar-link" href="/inventory">List</a></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="/inventory/add">Add </a></li>
+        </ul>
+      </li>
+
+      <li class="sidebar-item">
+        <a data-bs-target="#documents" data-bs-toggle="collapse" class="sidebar-link collapsed">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder align-middle me-2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+           <span class="align-middle">Documents</span>
+        </a>
+        <ul id="documents" class="sidebar-dropdown list-unstyled collapse " data-bs-parent="#sidebar">
+          <li class="sidebar-item"><a class="sidebar-link" href="/document">List</a></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="/document/add">Add </a></li>
+        </ul>
+      </li>
+
+      <li class="sidebar-item">
+        <a data-bs-target="#finance" data-bs-toggle="collapse" class="sidebar-link collapsed">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-credit-card align-middle me-2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+           <span class="align-middle">Finance</span>
+        </a>
+        <ul id="finance" class="sidebar-dropdown list-unstyled collapse " data-bs-parent="#sidebar">
+          <li class="sidebar-item"><a class="sidebar-link" href="/finance/income">Income </a></li>
+          <li class="sidebar-item"><a class="sidebar-link" href="/finance/expense">Expense </a></li>
+        </ul>
+      </li>
+
+
+    </ul>
+
+    <div class="sidebar-cta">
+      <div class="sidebar-cta-content">
+        <strong class="d-inline-block mb-2">Weekly Report</strong>
+        <div class="mb-3 text-sm">
+          Feature coming soon
+        </div>
+
+        <div class="d-grid">
+          <a href="#" class="btn btn-outline-primary" target="_blank">Download</a>
+        </div>
+      </div>
+    </div>
+  </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 318px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar simplebar-visible" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: visible;"><div class="simplebar-scrollbar simplebar-visible" style="height: 56px; transform: translate3d(0px, 0px, 0px); display: block;"></div></div></div>
+</nav>

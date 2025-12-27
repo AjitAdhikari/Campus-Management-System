@@ -1,0 +1,59 @@
+
+<main class="d-flex w-100">
+  <div class="container d-flex flex-column">
+      <div class="row vh-100">
+          <div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
+              <div class="d-table-cell align-middle">
+
+                  <div class="text-center mt-4">
+
+                      <p class="lead">
+                          Sign in to your account to continue
+                      </p>
+                  </div>
+
+                  <div class="card">
+
+                      <div class="card-body">
+                          <div class="m-sm-4">
+                            <!-- <img src="../assets/img/SUSHI.jpeg" height="250px" width="250px" class="center"> -->
+
+                            <form [formGroup]="form" (ngSubmit)="onSubmit()" >
+                                  <div class="mb-3">
+                                      <label class="form-label">Username</label>
+                                      <input required="required"  formControlName="username" placeholder="Enter your username" type="text" class="form-control  form-control-lg">
+                                      <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        <div *ngIf="form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)">
+                                          <div *ngIf="form.get('username')?.errors?.required">Username is required.</div>
+                                        </div>
+                                      </div>
+                                  </div>
+                                  <div class="mb-3">
+                                      <label class="form-label">Password</label>
+                                      <input type = "password" required="required" formControlName = "password"
+                                      placeholder="Enter your password" class="form-control">
+                                      <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
+                                        <div *ngIf="form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)">
+                                          <div *ngIf="form.get('password')?.errors?.required">Password is required.</div>
+                                        </div>
+                                      </div>
+
+                                  </div>
+                                  <div>
+                                  </div>
+                                  <div class="text-center mt-3">
+                                      <button type="submit" [disabled]="isLoading"
+                                              class="btn btn-lg btn-primary">
+                                          Login
+                                      </button>
+                                  </div>
+                                </form>
+                          </div>
+                      </div>
+                  </div>
+
+              </div>
+          </div>
+      </div>
+  </div>
+</main>

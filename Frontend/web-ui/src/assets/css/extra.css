@@ -1,0 +1,65 @@
+.category
+{
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.pagination {
+    margin-top: 10px;
+}
+
+.countBar {
+    list-style: none;
+    display: flex;
+    padding: 0px;
+    margin-top: 15px;
+}
+
+.countBar a {
+    margin-right: 40px;
+}
+
+.message {
+    color: red;
+}
+
+.image {
+    height: 100px;
+}
+
+.search-form-display {
+    display: block !important;
+}
+
+.search-form-default {
+    display: none;
+}
+
+.table-image{
+  height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.loader-outer{
+  display:grid;
+  justify-content: center;
+}
+
+.mr-2{
+  margin-right: 2px;
+}
+
+.filter-label, .table-page{
+  font-size: 11px;
+}
+
+.filter-button{
+  margin-top: 20px;
+}
+
+.btn-document svg{
+  height: 16px !important;
+  width: 16px !important;
+}
