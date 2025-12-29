@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventories', function (Blueprint $table) {
+        Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255);
-            $table->integer('quantity')->default(0);
-            $table->string('code', 100)->unique();
-            $table->text('description')->nullable();
-            $table->string('image_url')->nullable();
+            $table->foreignUuId('faculty_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -27,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventories');
+        Schema::dropIfExists('attendances');
     }
 };

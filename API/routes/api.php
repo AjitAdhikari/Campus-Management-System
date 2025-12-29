@@ -1,51 +1,91 @@
 <?php
 
-use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\MemberController;
-use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\ExpenseController;
-use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\FeeController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NoticeController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\ClassScheduleController;
+use App\Http\Controllers\ExamResultController;
+use App\Http\Controllers\ExamController;
+use App\Http\Controllers\FacultyAttendanceController;
 
-Route::prefix('inventories')->group(function () {
-    Route::post('/', [InventoryController::class, 'create']);
-    Route::post('/{id}', [InventoryController::class, 'store']);
-    Route::delete('/{id}', [InventoryController::class, 'destroy']);
-    Route::get('/{id}', [InventoryController::class, 'get']);
-    Route::get('/', [InventoryController::class, 'index']);
+
+
+Route::get('/test', function() {
+    return ['message' => 'API is working'];
 });
 
-Route::prefix('members')->group(function () {
-    Route::post('/', [MemberController::class, 'create']);
-    Route::post('/{id}', [MemberController::class, 'store']);
-    Route::get('/', [MemberController::class, 'index']);
-    Route::delete('/{id}', [MemberController::class, 'destroy']);
-    Route::get('/{id}', [MemberController::class, 'get']);
-    Route::get('/active-member', [MemberController::class, 'list_active_members']);
+
+Route::prefix('auth')->group(function () {
+    Route::post('/login',    [AuthController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout',  [AuthController::class, 'logout']);
+        Route::get('/profile',  [AuthController::class, 'profile']);
+    });
 });
 
-Route::prefix('documents')->group(function () {
-    Route::post('/', [DocumentController::class, 'create']);
-    Route::put('/', [DocumentController::class, 'store']);
-    Route::delete('/{id}', [DocumentController::class, 'destroy']);
-    Route::get('/{id}', [DocumentController::class, 'get']);
-    Route::get('/download/{id}', [DocumentController::class, 'download']);
-    Route::get('/', [DocumentController::class, 'index']);
+//http://localhost:8000/api/users
+Route::prefix('users')->group(function(){
+    Route::post('/', [UserController::class, 'create']);
+    Route::post('/{id}', [UserController::class, 'update']);
+    Route::delete('/{id}',[UserController::class, 'delete']);
+    Route::get('/{id}', [UserController::class, 'get']);
+    Route::get('/', [UserController::class, 'index']);
 });
 
-Route::prefix('expenses')->group(function () {
-    Route::post('/', [ExpenseController::class, 'create']);
-    Route::put('/', [ExpenseController::class, 'store']);
-    Route::delete('/{expenseDate}', [ExpenseController::class, 'destroy']);
-    Route::get('/{expenseDate}', [ExpenseController::class, 'get']);
-    Route::get('/', [ExpenseController::class, 'index']);
-    Route::get('/total-expense', [ExpenseController::class, 'total']);
+
+//http://localhost:8000/api/fees
+Route::prefix('fees')->group(function () {
+    Route::post('/', [FeeController::class, 'create']);
+    Route::post('/details', [FeeController::class, 'create_fee_details']);
+    Route::post('/{id}', [FeeController::class, 'store']);
+    Route::post('/details/{id}', [FeeController::class, 'update_fee_details']);
+    Route::delete('/{id}', [FeeController::class, 'delete']);
+    Route::delete('/details/{id}', [FeeController::class, 'delete_fee_details']);
+    Route::get('/{user_id}', [FeeController::class, 'show']);
+    Route::get('/details/{user_id}', [FeeController::class, 'show_fee_details']);
+    Route::get('/', [FeeController::class, 'index']);
+});
+//http://localhost:8000/api/notices
+Route::prefix('notices')->group(function () {
+    Route::post('/', [NoticeController::class, 'create']);
+    Route::post('/{id}', [NoticeController::class, 'update']);
+    Route::get('/', [NoticeController::class, 'list']);
+    Route::delete('/{id}', [NoticeController::class, 'delete']);
+    Route::get('/{id}', [NoticeController::class, 'get']);
 });
 
-Route::prefix('incomes')->group(function () {
-    Route::post('/', [IncomeController::class, 'create']);
-    Route::put('/', [IncomeController::class, 'store']);
-    Route::delete('/{incomeDate}', [IncomeController::class, 'destroy']);
-    Route::get('/{incomeDate}', [IncomeController::class, 'get']);
-    Route::get('/', [IncomeController::class, 'index']);
-    Route::get('/total-income', [IncomeController::class, 'total']);
-});
+
+ // Courses
+    Route::apiResource('courses', CourseController::class);
+
+    // Class Schedules
+    Route::apiResource('class-schedules', ClassScheduleController::class);
+
+    // Assignments
+    Route::apiResource('assignments', AssignmentController::class);
+    Route::post('assignment-submissions', [AssignmentSubmissionController::class, 'store']);
+    Route::put('assignment-submissions/{assignmentSubmission}', [AssignmentSubmissionController::class, 'update']);
+
+    // Exams & Results
+    Route::apiResource('exams', ExamController::class)->only(['index','store']);
+    Route::post('exam-results', [ExamResultController::class, 'store']);
+    Route::get('exam-results/{studentId}', [ExamResultController::class, 'show']);
+
+
+       // Departments
+    Route::apiResource('departments', DepartmentController::class);
+
+    Route::post(
+        'faculty/attendance',
+        [FacultyAttendanceController::class, 'store']
+    );
+
+     Route::get(
+        'faculty/attendance',
+        [FacultyAttendanceController::class, 'index']
+    );
