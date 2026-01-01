@@ -1,0 +1,54 @@
+<div class="fees-container">
+  <div class="invoice-header">
+    <h1>Manage Invoice</h1>
+    <a class="view-all" href="#" (click)="viewAllInvoices($event)">View all Invoice</a>
+  </div>
+
+  <table class="invoice-table">
+    <thead>
+      <tr>
+        <th>S.No</th>
+        <th>Invoice Number</th>
+        <th>Fee Status</th>
+        <th>Total Amount</th>
+        <th>Amount Pay</th>
+        <th>Balanced Amount</th>
+        <th>Invoice Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let invoice of displayedFees; let i = index">
+        <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+        <td>{{ invoice.invoiceNumber }}</td>
+        <td>{{ invoice.feeStatus }}</td>
+        <td>{{ invoice.totalAmount | number:'1.0-0' }}</td>
+        <td>{{ invoice.amountPay | number:'1.0-0' }}</td>
+        <td>{{ invoice.balancedAmount | number:'1.0-0' }}</td>
+        <td>{{ invoice.invoiceDate }}</td>
+        <td>
+          <button class="btn-view" (click)="viewInvoice(invoice)">View</button>
+        </td>
+      </tr>
+      <tr *ngIf="pendingFees.length === 0">
+        <td colspan="8" class="no-data">No invoices found</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Payment buttons removed: UI only requires View action per-row -->
+
+  <div class="pagination" *ngIf="pendingFees.length > 0">
+    <a href="#" (click)="goTo('first', $event)">First</a>
+    <a href="#" (click)="goTo('prev', $event)">Prev</a>
+    <span *ngFor="let _ of createRange(totalPages); let idx = index">
+      <a href="#" [class.active]="currentPage === (idx+1)" (click)="changePage(idx+1, $event)">{{ idx + 1 }}</a>
+    </span>
+    <a href="#" (click)="goTo('next', $event)">Next</a>
+    <a href="#" (click)="goTo('last', $event)">Last</a>
+  </div>
+
+  <div class="payment-section" *ngIf="pendingFees.length > 0" style="text-align:center; margin-top:0.75rem;">
+    <button (click)="proceedToPayment()" style="padding:0.6rem 1.2rem; background:#4f46e5; color:#fff; border:none; border-radius:6px; cursor:pointer;">Proceed to Payment</button>
+  </div>
+</div>

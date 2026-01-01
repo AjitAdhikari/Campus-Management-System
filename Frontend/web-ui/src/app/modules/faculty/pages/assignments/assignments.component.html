@@ -1,0 +1,162 @@
+<div class="assignments-card">
+	<div class="assignments-header">
+		<h2> Assignment</h2>
+		<div>
+			<button class="upload-btn" (click)="openCreate()">+ Create Assignment</button>
+		</div>
+	</div>
+
+	<div class="divider"></div>
+
+	<h3 style="margin: 0 0 16px 0; font-size: 18px; color: #111827; font-weight: 700;">Your Assignments</h3>
+
+	<div class="assignments-list">
+		<div class="assignment-row" *ngFor="let a of assignments; let i = index" [class.alt]="i % 2 === 1">
+			<div class="left">
+				<a class="title">{{ a.title }}</a>
+				<div class="course">{{ a.course?.course_name || 'N/A' }} - {{ a.description }}</div>
+			</div>
+			<div class="right">
+				<div class="stats">{{ getSubmissionCount(a) }} <span class="stat-label">Submitted</span></div>
+				<div class="due">Due: <span>{{ a.due_date | date:'short' }}</span></div>
+				<button class="view-btn" (click)="openSubmissions(a)" [disabled]="loading">View Submissions</button>
+				<button class="view-btn" (click)="deleteAssignment(a.id)" [disabled]="loading">Delete</button>
+			</div>
+		</div>
+		<div *ngIf="assignments.length === 0 && !loading" class="muted">No assignments uploaded yet.</div>
+		<div *ngIf="loading" class="muted">Loading...</div>
+	</div>
+
+	<!-- Create Modal -->
+	<div class="modal-overlay" *ngIf="showForm">
+		<div class="modal">
+			<div class="modal-header">
+				<button class="close" (click)="clearForm(); showForm = false">✕</button>
+			</div>
+			<div class="modal-body">
+				<form (ngSubmit)="submitAssignment(title.value, description.value, due.value, courseSelect.value)">
+					<div class="field">
+						<label class="label">Course *</label>
+						<select #courseSelect required>
+							<option value="">Select a course</option>
+							<option *ngFor="let course of courses" [value]="course.id">
+								{{ course.course_name }} ({{ course.course_code }})
+							</option>
+						</select>
+					</div>
+					<div class="field">
+						<label class="label">Title *</label>
+						<input #title type="text" required />
+					</div>
+					<div class="field">
+						<label class="label">Due Date *</label>
+						<input #due type="date" required />
+					</div>
+					<div class="field">
+						<label class="label">Description</label>
+						<textarea #description rows="6"></textarea>
+					</div>
+					<div class="field">
+						<label class="label">File (optional)</label>
+						<label class="file-label" for="assignmentFile">Choose File</label>
+						<input id="assignmentFile" type="file" (change)="onFileSelected($event)" hidden />
+						<div *ngIf="selectedFiles.length > 0" style="margin-top:8px; color:#6B7280; font-size:13px;">
+							Selected: {{ selectedFiles[0].name }}
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn" (click)="clearForm(); showForm = false"
+							[disabled]="loading">Cancel</button>
+						<button type="submit" class="btn primary" [disabled]="loading">{{ loading ? 'Creating...' :
+							'Create Assignment' }}</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Submissions Modal -->
+	<div class="modal-overlay" *ngIf="submissionsTarget">
+		<div class="modal">
+			<div class="modal-header">
+				<h3>Submissions for: {{ submissionsTarget.title }}</h3>
+				<button class="close" (click)="closeSubmissions()">✕</button>
+			</div>
+			<div class="modal-body">
+				<div *ngIf="submissionsTarget.submissions && submissionsTarget.submissions.length > 0; else noSubs">
+					<table class="submissions-table">
+						<thead>
+							<tr>
+								<th>Student Name</th>
+								<th>Submitted At</th>
+								<th>Grade</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr *ngFor="let s of submissionsTarget.submissions">
+								<td>
+									<strong>{{ s.student?.profile?.first_name }} {{ s.student?.profile?.last_name ||
+										s.student?.name || 'Unknown Student' }}</strong>
+								</td>
+								<td class="muted">{{ s.submitted_at | date:'short' }}</td>
+								<td>
+									<span *ngIf="s.grade" class="grade-badge">{{ s.grade }}</span>
+									<span *ngIf="!s.grade" class="muted" style="font-size: 12px;">Not graded</span>
+								</td>
+								<td>
+									<button class="action-btn" *ngIf="s.file" (click)="downloadAttachment(s.file)">
+										<span>📥</span> Download
+									</button>
+									<button class="action-btn feedback" (click)="openFeedbackForm(s)">
+										<span>💬</span> Feedback
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<ng-template #noSubs>
+					<p class="muted">No submissions for this assignment yet.</p>
+				</ng-template>
+			</div>
+		</div>
+	</div>
+
+	<!-- Feedback Modal -->
+	<div class="modal-overlay" *ngIf="selectedSubmission">
+		<div class="modal">
+			<div class="modal-header">
+				<h3>Provide Feedback for {{ selectedSubmission.student?.profile?.first_name }} {{
+					selectedSubmission.student?.profile?.last_name || selectedSubmission.student?.name || 'Student' }}
+				</h3>
+				<button class="close" (click)="closeFeedbackForm()">✕</button>
+			</div>
+			<div class="modal-body">
+				<div class="field">
+					<label class="label">Submitted File</label>
+					<button class="btn" *ngIf="selectedSubmission.file"
+						(click)="downloadAttachment(selectedSubmission.file)" style="width: 100%;">
+						📥 Download Student Submission
+					</button>
+				</div>
+				<div class="field">
+					<label class="label">Feedback</label>
+					<textarea [(ngModel)]="selectedSubmission.feedback" rows="5"
+						placeholder="Write your feedback here..."></textarea>
+				</div>
+				<div class="field">
+					<label class="label">Grade (optional)</label>
+					<input [(ngModel)]="selectedSubmission.grade" type="text" placeholder="e.g., A, 95, Pass" />
+				</div>
+				<div class="modal-footer">
+					<button class="btn" (click)="closeFeedbackForm()" [disabled]="loading">Cancel</button>
+					<button class="btn primary" (click)="saveSubmissionFeedback(selectedSubmission)"
+						[disabled]="loading">
+						{{ loading ? 'Saving...' : 'Save Feedback' }}
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,117 @@
+.cms-sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #05292b 0%, #041c1d 100%);
+    color: #e6eef8;
+    min-height: 100vh;
+    padding: 1rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    box-shadow: inset 8px 0 24px rgba(0,0,0,0.45);
+}
+.student-sidebar {
+    width: 220px;
+}
+
+.brand {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.brand-link {
+    color: inherit;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 12px;
+    transform: translateY(6px);
+    font-size: 1.25rem;
+    letter-spacing: 0.6px;
+}
+
+.quick-section {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.quick-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.quick-link:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.quick-link.active {
+    background: rgba(14,165,164,0.12);
+    color: #9ff0ea;
+}
+
+.quick-link.active .ql-icon svg {
+    color: currentColor;
+}
+
+.ql-icon {
+    display: inline-flex;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: background 0.18s ease;
+}
+
+.ql-icon svg { width: 20px; height: 20px; display: block }
+
+.cms-sidebar .quick-link.active .ql-icon { background: rgba(255,255,255,0.04) }
+
+.ql-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.sidebar-footer {
+    text-align: center;
+    color: #94a3b8;
+    width: 100%;
+}
+
+.muted {
+    color: #94a3b8;
+}
+
+@media (max-width: 900px) {
+    .student-sidebar {
+        display: none;
+    }
+}
+
+.cms-sidebar .ql-icon svg * {
+    stroke: currentColor !important;
+    fill: none !important;
+    opacity: 0.95;
+}

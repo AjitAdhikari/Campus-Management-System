@@ -1,0 +1,76 @@
+.grades-form {
+    max-width: 800px;
+    margin: 12px auto;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.grades-form h2 {
+    margin: 0 0 12px 0;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.form-row label {
+    width: 120px;
+    font-weight: 600;
+}
+
+.form-row select,
+.form-row input[type="file"],
+.form-row input[type="number"] {
+    flex: 1 1 auto;
+    padding: 6px 8px;
+}
+
+.students-table {
+    margin-top: 12px;
+    border-top: 1px solid #eee;
+}
+
+.table-header,
+.table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 8px;
+    padding: 8px 4px;
+    align-items: center;
+}
+
+.table-header {
+    font-weight: 700;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table-row:nth-child(odd) {
+    background: #fbfbfb;
+}
+
+.student-mark input {
+    width: 90px;
+}
+
+.actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.messages .error {
+    color: #b00020;
+}
+
+.messages .success {
+    color: #0a7a0a;
+}
+
+.field-error small {
+    color: #b00020;
+}

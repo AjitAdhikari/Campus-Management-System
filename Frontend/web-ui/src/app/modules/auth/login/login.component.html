@@ -20,11 +20,11 @@
 
                             <form [formGroup]="form" (ngSubmit)="onSubmit()" >
                                   <div class="mb-3">
-                                      <label class="form-label">Username</label>
-                                      <input required="required"  formControlName="username" placeholder="Enter your username" type="text" class="form-control  form-control-lg">
+                                      <label class="form-label">Email Address</label>
+                                      <input required="required"  formControlName="email" placeholder="Enter your email" type="text" class="form-control  form-control-lg">
                                       <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        <div *ngIf="form.get('username')?.invalid && (form.get('username')?.dirty || form.get('username')?.touched)">
-                                          <div *ngIf="form.get('username')?.errors?.required">Username is required.</div>
+                                        <div *ngIf="form.get('email')?.invalid && (form.get('email')?.dirty || form.get('email')?.touched)">
+                                          <div *ngIf="form.get('email')?.errors?.required">email is required.</div>
                                         </div>
                                       </div>
                                   </div>

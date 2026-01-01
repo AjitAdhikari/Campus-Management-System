@@ -1,0 +1,43 @@
+<div class="results-page">
+	<section class="panel">
+		<div class="panel-head">
+			<div>
+				<h2 class="page-title">Results</h2>
+				<p class="muted">View your subjects, marks, and grades.</p>
+			</div>
+			<button class="primary" type="button" (click)="downloadReport()">Download Report (PDF)</button>
+		</div>
+
+		<div class="table-wrapper">
+			<table class="results-table">
+				<thead>
+					<tr>
+						<th>Subject</th>
+						<th>Code</th>
+						<th>Semester</th>
+						<th>Marks</th>
+						<th>Grade</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let result of results">
+						<td class="title">{{ result.subjectName }}</td>
+						<td class="muted">{{ result.code }}</td>
+						<td>{{ result.semester }}</td>
+						<td>{{ result.mark }} / 100</td>
+						<td><span class="grade">{{ result.grade }}</span></td>
+						<td>
+							<span class="status" [ngClass]="statusClass(result.status)">{{ result.status }}</span>
+						</td>
+					</tr>
+					<tr *ngIf="results.length === 0">
+						<td colspan="6" class="empty">No published results yet.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<p class="muted small">Last updated: {{ lastUpdated }}</p>
+	</section>
+</div>

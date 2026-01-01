@@ -1,10 +1,15 @@
 <div class="wrapper">
-  <app-sidebar *ngIf="isLoggedIn()"></app-sidebar>
+  <app-admin-sidebar *ngIf="isLoggedIn() && isAdminRoute()"></app-admin-sidebar>
+  <app-faculty-sidebar *ngIf="isLoggedIn() && isFacultyRoute()"></app-faculty-sidebar>
+  <app-student-sidebar *ngIf="isLoggedIn() && isStudentRoute()"></app-student-sidebar>
+  <app-clockin-popup *ngIf="isLoggedIn() && isFacultyRoute()"></app-clockin-popup>
   <div class="main">
-  <app-header *ngIf="isLoggedIn()"></app-header>
+    <app-header *ngIf="!isLoginRoute() && isAdminRoute()"></app-header>
+    <app-faculty-header *ngIf="!isLoginRoute() && isFacultyRoute()"></app-faculty-header>
+    <app-student-header *ngIf="!isLoginRoute() && isStudentRoute()"></app-student-header>
     <main class="content">
-        <router-outlet></router-outlet>
+      <router-outlet></router-outlet>
     </main>
-    <app-footer *ngIf="isLoggedIn()"></app-footer>
+    <app-footer *ngIf="!isLoginRoute()"></app-footer>
   </div>
 </div>

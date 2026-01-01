@@ -1,53 +1,69 @@
-  <div class="card">
-    <div class="card-header">
-
-      <h5 class="card-title mb-0">Private info</h5>
-    </div>
-    <div class="card-body">
-      <form>
-        <div class="row">
-          <div class="mb-3 col-md-6">
-            <label class="form-label" for="inputFirstName">First name</label>
-            <input type="text" class="form-control" id="inputFirstName" placeholder="First name">
-          </div>
-          <div class="mb-3 col-md-6">
-            <label class="form-label" for="inputLastName">Last name</label>
-            <input type="text" class="form-control" id="inputLastName" placeholder="Last name">
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="inputEmail4">Email</label>
-          <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="inputAddress">Address</label>
-          <input type="text" class="form-control" id="inputAddress" placeholder="1234 Main St">
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="inputAddress2">Address 2</label>
-          <input type="text" class="form-control" id="inputAddress2" placeholder="Apartment, studio, or floor">
-        </div>
-        <div class="row">
-          <div class="mb-3 col-md-6">
-            <label class="form-label" for="inputCity">City</label>
-            <input type="text" class="form-control" id="inputCity">
-          </div>
-          <div class="mb-3 col-md-4">
-            <label class="form-label" for="inputState">State</label>
-            <select id="inputState" class="form-control">
-              <option selected="">Choose...</option>
-              <option>...</option>
-            </select>
-          </div>
-          <div class="mb-3 col-md-2">
-            <label class="form-label" for="inputZip">Zip</label>
-            <input type="text" class="form-control" id="inputZip">
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Save changes</button>
-      </form>
-
-    </div>
+<div class="card profile-card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">My Profile</h5>
   </div>
+  <div class="card-body">
+    <div *ngIf="loading" class="text-center">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
 
+    <ng-container *ngIf="!loading && userProfile">
+      <div class="profile-content">
+        <!-- Profile Photo Section -->
+        <div class="profile-photo-section">
+          <div class="profile-photo-container">
+            <img [src]="getAvatarSrc()" alt="Profile Photo" class="profile-photo">
+          </div>
+          <div class="photo-upload">
+            <input type="file" #fileInput (change)="onAvatarSelected($event)" accept="image/*" class="d-none">
+            <button type="button" class="btn btn-sm btn-primary" (click)="fileInput.click()" [disabled]="loading">
+              Upload Photo
+            </button>
+            <button type="button" class="btn btn-sm btn-success ms-2" (click)="uploadPhoto()"
+              [disabled]="!selectedAvatarFile || loading" *ngIf="selectedAvatarFile">
+              Save Photo
+            </button>
+          </div>
+        </div>
 
+        <!-- Profile Info Section -->
+        <div class="profile-info-section">
+          <div class="profile-info-row">
+            <span class="info-label">Name:</span>
+            <span class="info-value">{{ userProfile.name }}</span>
+          </div>
+
+          <div class="profile-info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ userProfile.email }}</span>
+          </div>
+
+          <div class="profile-info-row">
+            <span class="info-label">Role:</span>
+            <span class="info-value">
+              <span class="badge" [ngClass]="{
+                        'bg-primary': userProfile.role === 'student',
+                        'bg-warning': userProfile.role === 'faculty',
+                        'bg-danger': userProfile.role === 'admin'
+                      }">
+                {{ userProfile.role | titlecase }}
+              </span>
+            </span>
+          </div>
+
+          <div class="profile-info-row" *ngIf="isStudent() && userProfile.semesters">
+            <span class="info-label">Semester:</span>
+            <span class="info-value">{{ userProfile.semesters }}</span>
+          </div>
+
+          <div class="profile-info-row" *ngIf="isFaculty() && userProfile.subjects">
+            <span class="info-label">Subject Assigned:</span>
+            <span class="info-value">{{ userProfile.subjects }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

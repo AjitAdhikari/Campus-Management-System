@@ -1,0 +1,99 @@
+<div class="add-courses-root">
+	<header class="page-header">
+		<h2>Courses</h2>
+		<button class="btn btn-primary" (click)="showForm = true">+ Create</button>
+	</header>
+
+	<hr />
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>SN</th>
+				<th>Course Title</th>
+				<th>Code</th>
+				<th>Credit</th>
+				<th>Department</th>
+				<th>Semester</th>
+				<th>Activity</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngIf="courses.length === 0">
+				<td colspan="7" class="muted">No courses added yet.</td>
+			</tr>
+			<tr *ngFor="let c of courses; let i = index">
+				<td>{{i + 1}}</td>
+				<td>{{c.course_name}}</td>
+				<td>{{c.course_code || '-'}}</td>
+				<td>{{c.credit || '-'}}</td>
+				<td>{{c.department}}</td>
+				<td>{{c.semester || '-'}}</td>
+				<td>
+					<button class="btn btn-sm btn-info" type="button" (click)="edit(c)">Edit</button>
+					<button class="btn btn-sm btn-danger" type="button" (click)="delete(c.id)">Delete</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<aside class="form-overlay" *ngIf="showForm">
+		<div class="form-card">
+			<header class="form-head">
+				<h3>{{ editingId !== null ? 'Edit' : 'Create' }} Course</h3>
+				<button class="close" (click)="cancel()">✕</button>
+			</header>
+
+			<form #f="ngForm" (ngSubmit)="submit(f)">
+				<div class="form-body">
+					<label>Title</label>
+					<input name="title" #title="ngModel" required [(ngModel)]="model.title" class="form-control" />
+					<div *ngIf="title.invalid && (title.dirty || title.touched || f.submitted)" class="error">Title is
+						required.</div>
+
+					<label>Code</label>
+					<input name="code" #code="ngModel" required [(ngModel)]="model.code" class="form-control" />
+					<div *ngIf="code.invalid && (code.dirty || code.touched || f.submitted)" class="error">Code is
+						required.</div>
+
+					<label>Credit</label>
+					<input type="number" min="0" name="credit" #credit="ngModel" required [(ngModel)]="model.credit"
+						class="form-control" />
+					<div *ngIf="credit.invalid && (credit.dirty || credit.touched || f.submitted)" class="error">Credit
+						is required.</div>
+
+					<label>Department</label>
+					<select name="department" #department="ngModel" required [(ngModel)]="model.department"
+						class="form-control">
+						<option value="">Select a Department</option>
+						<option *ngFor="let dept of departments" [value]="dept.name">{{dept.name}}</option>
+					</select>
+					<div *ngIf="department.invalid && (department.dirty || department.touched || f.submitted)"
+						class="error">Please select a department.</div>
+
+					<label>Semester</label>
+					<select name="semester" #semester="ngModel" required [(ngModel)]="model.semester"
+						class="form-control">
+						<option *ngFor="let n of [1,2,3,4,5,6,7,8]" [ngValue]="n">Semester {{ n }}</option>
+					</select>
+					<div *ngIf="semester.invalid && (semester.dirty || semester.touched || f.submitted)" class="error">
+						Please select a semester.</div>
+
+
+
+					<label>Syllabus</label>
+					<input type="file" name="syllabus" required (change)="onSyllabusSelected($event)"
+						class="form-control" accept=".pdf,.doc,.docx" />
+					<div *ngIf="f.submitted && !model.syllabus" class="error">Please attach a syllabus file (PDF, DOC,
+						DOCX).</div>
+					<small class="text-muted">Accepted formats: PDF, DOC, DOCX</small>
+				</div>
+
+				<footer class="form-actions">
+					<button class="btn" type="button" (click)="cancel()">Cancel</button>
+					<button class="btn btn-primary" type="submit">{{ editingId !== null ? 'Update Course' : 'Add Course'
+						}}</button>
+				</footer>
+			</form>
+		</div>
+	</aside>
+</div>

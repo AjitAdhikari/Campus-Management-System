@@ -1,0 +1,52 @@
+<div class="grades-form">
+	<h2>Grade Submission</h2>
+
+	<form [formGroup]="form" (ngSubmit)="submit()">
+		<div class="form-row">
+			<label for="semester">Semester</label>
+			<select id="semester" formControlName="semester">
+				<option value="">-- Select semester --</option>
+				<option *ngFor="let s of semesters" [value]="s">{{ s }}</option>
+			</select>
+		</div>
+
+		<div class="form-row">
+			<label for="subject">Subject</label>
+			<select id="subject" formControlName="subject">
+				<option value="">-- Select subject --</option>
+				<option *ngFor="let sub of subjects" [value]="sub.id">{{ sub.name }}</option>
+			</select>
+		</div>
+
+		<div class="messages">
+			<div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+			<div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+		</div>
+
+		<div class="students-table" formArrayName="marks">
+			<div class="table-header">
+				<div>Student</div>
+				<div>Roll No</div>
+				<div>Mark (0-100)</div>
+			</div>
+			<div class="table-row" *ngFor="let ctrl of markGroups; let i = index" [formGroup]="ctrl">
+				<div class="student-name">{{ ctrl.get('name')?.value }}</div>
+				<div class="student-reg">{{ i + 1 }}</div>
+				<div class="student-mark">
+					<input type="number" formControlName="mark" min="0" max="100" />
+					<div class="field-error"
+						*ngIf="ctrl.get('mark')?.invalid && (ctrl.get('mark')?.touched || form.touched)">
+						<small *ngIf="ctrl.get('mark')?.errors?.required">Required</small>
+						<small *ngIf="ctrl.get('mark')?.errors?.min">Min 0</small>
+						<small *ngIf="ctrl.get('mark')?.errors?.max">Max 100</small>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="actions">
+			<button type="submit">Submit Marks</button>
+			<button type="button" (click)="resetForm()">Reset</button>
+		</div>
+	</form>
+</div>

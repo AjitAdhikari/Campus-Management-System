@@ -1,0 +1,163 @@
+<div class="assignments-page">
+	<section class="panel assignments-panel">
+		<div class="panel-head">
+			<div>
+				<h2 class="page-title">Assignments</h2>
+				<p class="muted">Track due dates, status, and submissions.</p>
+			</div>
+		</div>
+
+		<div class="table-wrapper">
+			<table class="assignments-table">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Course</th>
+						<th>Description</th>
+						<th>Due</th>
+						<th>Status</th>
+						<th>Grade</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let assignment of assignments">
+						<td>
+							<div class="title">{{ assignment.title }}</div>
+						</td>
+						<td class="muted">{{ assignment.course?.course_name || 'N/A' }}</td>
+						<td class="muted">{{ assignment.description || 'No description' }}</td>
+						<td>{{ assignment.due_date | date:'short' }}</td>
+						<td>
+							<span class="status" [ngClass]="statusClass(getStatus(assignment))">{{ getStatus(assignment)
+								}}</span>
+						</td>
+						<td>
+							<span *ngIf="assignment.submission?.grade" class="grade-badge">
+								{{ assignment.submission?.grade }}
+							</span>
+							<span *ngIf="!assignment.submission?.grade" class="muted" style="font-size: 12px;">
+								{{ assignment.is_submitted ? 'Not graded' : '-' }}
+							</span>
+						</td>
+						<td>
+							<button class="link-btn" type="button" (click)="openSubmitModal(assignment)"
+								[disabled]="loading">
+								{{ assignment.is_submitted ? 'View Submission' : 'Submit' }}
+							</button>
+							<button class="link-btn" type="button" *ngIf="assignment.attachment"
+								(click)="downloadAttachment(assignment.attachment)" style="margin-left:8px;">
+								Download
+							</button>
+						</td>
+					</tr>
+					<tr *ngIf="assignments.length === 0 && !loading">
+						<td colspan="7" class="empty">No assignments available.</td>
+					</tr>
+					<tr *ngIf="loading">
+						<td colspan="7" class="empty">Loading assignments...</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+</div>
+
+<!-- Submit Modal -->
+<div class="modal-overlay" *ngIf="showSubmitModal">
+	<div class="modal">
+		<div class="modal-header">
+			<h3>Submit Assignment: {{ selectedAssignment?.title }}</h3>
+			<button class="close" (click)="closeSubmitModal()" [disabled]="loading">✕</button>
+		</div>
+		<div class="modal-body">
+			<div class="field">
+				<label class="label">Course: {{ selectedAssignment?.course?.course_name }}</label>
+			</div>
+			<div class="field">
+				<label class="label">Due Date: {{ selectedAssignment?.due_date | date:'medium' }}</label>
+			</div>
+			<div class="field">
+				<label class="label">Select File to Submit *</label>
+				<input type="file" (change)="onFileSelected($event)" />
+				<div *ngIf="selectedFile" style="margin-top:8px; color:#6B7280; font-size:13px;">
+					Selected: {{ selectedFile.name }}
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn" (click)="closeSubmitModal()" [disabled]="loading">Cancel</button>
+				<button class="btn primary" (click)="submitAssignment()" [disabled]="loading || !selectedFile">
+					{{ loading ? 'Submitting...' : 'Submit Assignment' }}
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- View Submission Modal -->
+<div class="modal-overlay" *ngIf="viewingSubmission">
+	<div class="modal">
+		<div class="modal-header">
+			<h3>Submission Details: {{ viewingSubmission.title }}</h3>
+			<button class="close" (click)="closeViewSubmission()" [disabled]="loading">✕</button>
+		</div>
+		<div class="modal-body">
+			<div class="field">
+				<label class="label">Course</label>
+				<div style="padding: 8px; background: #f9fafb; border-radius: 6px;">
+					{{ viewingSubmission.course?.course_name || 'N/A' }}
+				</div>
+			</div>
+			<div class="field">
+				<label class="label">Due Date</label>
+				<div style="padding: 8px; background: #f9fafb; border-radius: 6px;">
+					{{ viewingSubmission.due_date | date:'medium' }}
+				</div>
+			</div>
+			<div class="field" *ngIf="viewingSubmission.submission">
+				<label class="label">Submitted On</label>
+				<div style="padding: 8px; background: #f9fafb; border-radius: 6px;">
+					{{ viewingSubmission.submission.submitted_at | date:'medium' }}
+				</div>
+			</div>
+			<div class="field" *ngIf="viewingSubmission.submission?.file">
+				<label class="label">Your Submission</label>
+				<button class="btn" (click)="downloadAttachment(viewingSubmission.submission!.file)"
+					style="width: 100%;">
+					Download Your Submission
+				</button>
+			</div>
+			<div class="divider" style="margin: 16px 0; height: 1px; background: #e5e7eb;"></div>
+			<div class="field" *ngIf="viewingSubmission.submission?.grade">
+				<label class="label" style="color: #059669; font-size: 14px;">Grade</label>
+				<div
+					style="padding: 12px; background: #ecfdf5; border-radius: 6px; border: 1px solid #a7f3d0; font-weight: 700; font-size: 18px; color: #059669;">
+					{{ viewingSubmission.submission!.grade }}
+				</div>
+			</div>
+			<div class="field" *ngIf="!viewingSubmission.submission?.grade">
+				<label class="label" style="color: #6b7280;">Grade</label>
+				<div
+					style="padding: 12px; background: #f9fafb; border-radius: 6px; color: #6b7280; font-style: italic;">
+					Not graded yet
+				</div>
+			</div>
+			<div class="field">
+				<label class="label"
+					[style.color]="viewingSubmission.submission?.feedback ? '#4f46e5' : '#6b7280'">Feedback from
+					Faculty</label>
+				<div *ngIf="viewingSubmission.submission?.feedback"
+					style="padding: 12px; background: #eef2ff; border-radius: 6px; border: 1px solid #c7d2fe; white-space: pre-wrap;">
+					{{ viewingSubmission.submission!.feedback }}
+				</div>
+				<div *ngIf="!viewingSubmission.submission?.feedback"
+					style="padding: 12px; background: #f9fafb; border-radius: 6px; color: #6b7280; font-style: italic;">
+					No feedback provided yet
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn primary" (click)="closeViewSubmission()" style="width: 100%;">Close</button>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,11 @@
+<div *ngIf="showModal" class="clockin-overlay">
+  <div class="clockin-modal">
+    <h5>Clock In</h5>
+    <p>Please clock in to record your attendance for today.</p>
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-sm btn-secondary me-2" (click)="close()">Close</button>
+      <button class="btn btn-sm btn-success" (click)="clockIn()">Clock In Now</button>
+    </div>
+  
+  </div>
+</div>

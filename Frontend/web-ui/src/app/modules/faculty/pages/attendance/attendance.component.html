@@ -1,0 +1,32 @@
+<div class="container mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h4>My Attendance</h4>
+    <div>
+      <button class="btn btn-sm btn-danger" (click)="clearAll()">Clear All</button>
+    </div>
+  </div>
+
+  <div *ngIf="attendance && attendance.length; else noData">
+    <p>Total records: {{ attendance.length }}</p>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>S.N.</th>
+          <th>Name</th>
+          <th>Clock-in</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of attendance; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ a?.name || '-' }}</td>
+          <td>{{ a?.timestamp | date:'medium' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noData>
+    <div class="alert alert-info">No attendance recorded yet.</div>
+  </ng-template>
+</div>

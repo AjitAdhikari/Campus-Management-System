@@ -63,3 +63,17 @@
   height: 16px !important;
   width: 16px !important;
 }
+
+/* Layout overrides: make sidebar fixed and only the main content scrollable */
+.wrapper{display:flex;min-height:100vh;height:100vh;overflow:hidden}
+.wrapper .admin-sidebar{flex:0 0 auto;position:relative}
+.wrapper .main{flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden}
+.wrapper .main .content{flex:1 1 auto;overflow:auto;padding:24px}
+
+/* ensure body doesn't create extra scroll; inner content handles scrolling */
+body{overflow:hidden}
+
+@media (max-width:900px){
+  /* on small screens let body scroll and hide sidebar as already defined */
+  body{overflow-y:visible}
+}

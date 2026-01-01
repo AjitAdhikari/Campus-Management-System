@@ -1,11 +1,11 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 
-import { SettingRoutingModule } from './setting-routing.module';
-import { PageSettingComponent } from './page-setting/page-setting.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AccountComponent } from './page-setting/account/account.component';
+import { PageSettingComponent } from './page-setting/page-setting.component';
 import { PasswordComponent } from './page-setting/password/password.component';
-import { FormsModule } from '@angular/forms';
+import { SettingRoutingModule } from './setting-routing.module';
 
 
 @NgModule({
@@ -17,7 +17,8 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     SettingRoutingModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ]
 })
 export class SettingModule { }

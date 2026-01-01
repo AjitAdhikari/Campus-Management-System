@@ -1,0 +1,171 @@
+<div class="um-root">
+	<header class="um-header">
+		<div>
+			<h2>User Management <span class="muted">(Admin)</span></h2>
+		</div>
+		<div class="um-actions">
+			<input type="text" placeholder="Search by name or email" [(ngModel)]="searchTerm" class="search" />
+			<div class="role-tabs">
+				<button class="tab" [class.active]="roleFilter === 'Admin'" (click)="setRoleFilter('Admin')">Admin ({{
+					countByRole('Admin') }})</button>
+				<button class="tab" [class.active]="roleFilter === 'Student'" (click)="setRoleFilter('Student')">Student
+					({{ countByRole('Student') }})</button>
+				<button class="tab" [class.active]="roleFilter === 'Faculty'" (click)="setRoleFilter('Faculty')">Faculty
+					({{ countByRole('Faculty') }})</button>
+			</div>
+			<div class="add-buttons">
+				<button class="btn primary" (click)="openAddCurrent()">+ Add {{ roleFilter }}</button>
+			</div>
+		</div>
+	</header>
+
+	<section class="um-table panel">
+		<div *ngIf="errorMessage" class="muted">{{ errorMessage }}</div>
+		<div *ngIf="loading" class="muted">Loading users...</div>
+		<table>
+			<thead>
+				<tr *ngIf="roleFilter === 'Student'">
+					<th>Name</th>
+					<th>Email</th>
+					<th>Semester</th>
+					<th>Department</th>
+					<th>Fees</th>
+					<th>Status</th>
+					<th class="actions">Actions</th>
+				</tr>
+				<tr *ngIf="roleFilter === 'Faculty'">
+					<th>Name</th>
+					<th>Email</th>
+					<th>Subjects</th>
+					<th>Department</th>
+					<th>Status</th>
+					<th class="actions">Actions</th>
+				</tr>
+				<tr *ngIf="roleFilter === 'Admin'">
+					<th>Name</th>
+					<th>Email</th>
+					<th>Roles</th>
+					<th>Status</th>
+					<th class="actions">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				<ng-container *ngIf="roleFilter === 'Student'">
+					<tr *ngFor="let u of filteredUsers">
+						<td>{{ u.name }}</td>
+						<td>{{ u.email }}</td>
+						<td>{{ u.semester || '-' }}</td>
+						<td>{{ u.department || '-' }}</td>
+						<td>{{ u.fees !== undefined ? u.fees : '-' }}</td>
+						<td>{{ u.status }}</td>
+						<td class="actions">
+							<button class="btn small" (click)="openEdit(u)">Edit</button>
+							<button class="btn small danger" (click)="deleteUser(u.id)">Delete</button>
+						</td>
+					</tr>
+				</ng-container>
+				<ng-container *ngIf="roleFilter === 'Faculty'">
+					<tr *ngFor="let u of filteredUsers">
+						<td>{{ u.name }}</td>
+						<td>{{ u.email }}</td>
+						<td>{{ getSubjectsDisplay(u.subjects) }}</td>
+						<td>{{ u.department || '-' }}</td>
+						<td>{{ u.status }}</td>
+						<td class="actions">
+							<button class="btn small" (click)="openEdit(u)">Edit</button>
+							<button class="btn small danger" (click)="deleteUser(u.id)">Delete</button>
+						</td>
+					</tr>
+				</ng-container>
+				<ng-container *ngIf="roleFilter === 'Admin'">
+					<tr *ngFor="let u of filteredUsers">
+						<td>{{ u.name }}</td>
+						<td>{{ u.email }}</td>
+						<td>{{ u.roles.join(', ') }}</td>
+						<td>{{ u.status }}</td>
+						<td class="actions">
+							<button class="btn small" (click)="openEdit(u)">Edit</button>
+							<button class="btn small danger" (click)="deleteUser(u.id)">Delete</button>
+						</td>
+					</tr>
+				</ng-container>
+				<tr *ngIf="filteredUsers.length === 0">
+					<td colspan="6" class="muted">No users found.</td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<div class="um-modal" *ngIf="showForm">
+		<div class="um-modal-backdrop" (click)="closeForm()"></div>
+		<div class="um-modal-card">
+			<h3>{{ modalTitle }}</h3>
+			<!-- common fields -->
+			<div class="form-row">
+				<label>Name</label>
+				<input required [(ngModel)]="tempUser.name" placeholder="Full name" />
+			</div>
+			<div class="form-row">
+				<label>Email</label>
+				<input type="email" required [(ngModel)]="tempUser.email" placeholder="user@example.com" />
+			</div>
+			<div class="form-row">
+				<label>Password</label>
+				<input type="password" [required]="!editing" [(ngModel)]="tempUser.password" placeholder="Set password" />
+			</div>
+			<!-- status moved to form end -->
+
+			<!-- Student specific -->
+			<div *ngIf="currentAddRole === 'Student' || (editing && tempUser.roles?.includes('Student'))">
+				<div class="form-row">
+					<label>Semester</label>
+					<select required [(ngModel)]="tempUser.semester">
+						<option *ngFor="let n of [1,2,3,4,5,6,7,8]" [ngValue]="n">Semester {{ n }}</option>
+					</select>
+				</div>
+				<div class="form-row">
+					<label>Department</label>
+					<select required [(ngModel)]="tempUser.department">
+						<option [ngValue]="undefined">Select a department</option>
+						<option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+					</select>
+				</div>
+				<div class="form-row">
+					<label>Fees</label>
+					<input type="number" min="0" step="1" required [(ngModel)]="tempUser.fees" placeholder="0" />
+				</div>
+			</div>
+
+			<!-- Faculty specific -->
+			<div *ngIf="currentAddRole === 'Faculty' || (editing && tempUser.roles?.includes('Faculty'))">
+				<div class="form-row">
+					<label>Course/Subject</label>
+					<select required [(ngModel)]="tempUser.subjects">
+						<option [ngValue]="undefined">Select a course</option>
+						<option *ngFor="let course of courses" [ngValue]="course.course_name">{{ course.course_name }}</option>
+					</select>
+				</div>
+				<div class="form-row">
+					<label>Department</label>
+					<select required [(ngModel)]="tempUser.department">
+						<option [ngValue]="undefined">Select a department</option>
+						<option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- status placed just above actions -->
+			<div class="form-row">
+				<label>Status</label>
+				<select required [(ngModel)]="tempUser.status">
+					<option value="Active">Active</option>
+					<option value="Inactive">Inactive</option>
+				</select>
+			</div>
+			<div class="form-actions">
+				<button class="btn" (click)="closeForm()">Cancel</button>
+				<button class="btn primary" (click)="saveUser()">{{ editing ? 'Save Changes' : 'Create User' }}</button>
+			</div>
+		</div>
+	</div>
+</div>

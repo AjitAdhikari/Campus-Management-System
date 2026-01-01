@@ -1,0 +1,36 @@
+<div class="notice-root">
+    <div class="notice-header">
+        <h1 class="notice-title">Notices</h1>
+        <div class="notice-controls">
+            <button type="button" class="tab" [class.active]="selectedSource === 'Admin'" (click)="setSource('Admin')">
+                Admin Notice
+            </button>
+            <button type="button" class="tab" [class.active]="selectedSource === 'University'" (click)="setSource('University')">
+                University Notice
+            </button>
+        </div>
+    </div>
+
+    <div class="notice-list">
+        <div *ngIf="loading" class="empty">Loading notices…</div>
+        <div *ngIf="!loading && filteredNotices.length === 0" class="empty">No notices from {{ selectedSource }}.</div>
+        <ul *ngIf="!loading && filteredNotices.length > 0">
+            <li *ngFor="let n of filteredNotices" class="notice-row">
+                <div class="notice-summary">
+                    <div class="title">{{ n.title }}</div>
+                    <div class="meta">{{ n.notice_date | date:'mediumDate' }} • Created: {{ n.created_at | date:'mediumDate' }}</div>
+                </div>
+                <div class="actions">
+                    <button type="button" (click)="viewNotice(n)">View</button>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="notice-detail" *ngIf="selectedNotice">
+        <h3 class="detail-title">{{ selectedNotice.title }}</h3>
+        <div class="detail-meta">{{ selectedNotice.notice_date | date:'mediumDate' }}</div>
+        <p class="detail-body">{{ selectedNotice.description }}</p>
+        <button type="button" class="close-btn" (click)="closeNotice()">Close</button>
+    </div>
+</div>

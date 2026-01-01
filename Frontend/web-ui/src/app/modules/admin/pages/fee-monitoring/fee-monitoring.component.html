@@ -1,0 +1,48 @@
+<div class="fm-root">
+  <header class="fm-header">
+	<h2>Students</h2>
+	<p class="lead">List of registered students and quick fee summary.</p>
+  </header>
+
+  <section class="panel">
+		<div class="search-controls">
+			<input type="text" placeholder="Search by name" [(ngModel)]="searchName" />
+			<select [(ngModel)]="searchSemester">
+				<option [ngValue]="null">All Semesters</option>
+				<option *ngFor="let sem of semesters" [ngValue]="sem">Semester {{ sem }}</option>
+			</select>
+		</div>
+	<table class="students-table">
+	  <thead>
+				<tr>
+					<th>NAME</th>
+					<th>SEMESTER</th>
+					<th>FEE DUE</th>
+					<th>TOTAL PAID</th>
+					<th>BALANCE</th>
+				</tr>
+	  </thead>
+	  <tbody>
+				<tr *ngFor="let s of paginatedStudents">
+					<td>{{ s.name }}</td>
+					<td>{{ s.semester || '-' }}</td>
+					<td>{{ s.feeDue | currency:'USD':'symbol' }}</td>
+					<td>{{ totalPaidForStudent(s.id) | currency:'USD':'symbol' }}</td>
+					<td>{{ balanceForStudent(s.id) | currency:'USD':'symbol' }}</td>
+				</tr>
+				<tr *ngIf="filteredStudents.length === 0">
+					<td colspan="5" class="muted">No students found</td>
+				</tr>
+	  </tbody>
+	</table>
+
+		<div class="pager" *ngIf="filteredStudents.length > pageSize">
+			<button class="pager-btn" (click)="prevPage()" [disabled]="page===1">Prev</button>
+			<ng-container *ngFor="let n of [].constructor(totalPages); let i = index">
+				<button class="pager-page" [class.active]="page===i+1" (click)="goToPage(i+1)">{{ i+1 }}</button>
+			</ng-container>
+			<button class="pager-btn" (click)="nextPage()" [disabled]="page===totalPages">Next</button>
+			<div class="pager-info">Page {{ page }} of {{ totalPages }} — Showing {{ paginatedStudents.length }} of {{ filteredStudents.length }}</div>
+		</div>
+  </section>
+</div>

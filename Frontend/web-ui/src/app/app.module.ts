@@ -1,23 +1,26 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
 
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { AuthModule } from './modules/auth/auth.module';
-import { InventoryModule } from './modules/inventory/inventory.module';
-import { MemberModule } from './modules/member/member.module';
-import { LayoutModule } from './modules/layout/layout.module';
-import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AppConfigInitService } from './appconfig.init';
+import { ClockinPopupComponent } from './components/clockin-popup/clockin-popup.component';
 import { JwtInterceptor } from './JwtInterceptor';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AdminSidebarComponent } from './modules/admin/components/admin-sidebar/admin-sidebar.component';
+import { HeaderModule } from './modules/admin/components/header/header.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { HeaderComponent as FacultyHeaderComponent } from './modules/faculty/components/header/header.component';
+import { LayoutModule } from './modules/layout/layout.module';
+import { HeaderComponent as StudentHeaderComponent } from './modules/student/components/header/header.component';
+import { StudentSidebarComponent } from './modules/student/components/student-sidebar/student-sidebar.component';
 
-import { ToastrModule } from 'ngx-toastr';
-import { DocumentModule } from './modules/document/document.module';
-import { FinanceModule } from './modules/finance/finance.module';
-import { SettingModule } from './modules/setting/setting.module';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { ToastrModule } from 'ngx-toastr';
+import { SettingModule } from './modules/setting/setting.module';
 
 
 
@@ -26,21 +29,29 @@ export function init_app(appLoadService: AppConfigInitService) {
 }
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    AdminSidebarComponent,
+    StudentSidebarComponent,
+    FacultyHeaderComponent,
+    StudentHeaderComponent,
+    ClockinPopupComponent,
+
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
+    RouterModule,
+    HeaderModule,
     AuthModule,
-    InventoryModule,
-    MemberModule,
+    // InventoryModule,
     LayoutModule,
-    DashboardModule,
-    DocumentModule,
-    FinanceModule,
+    // FinanceModule,
     SettingModule,
-    BrowserAnimationsModule, // required animations module
-    ToastrModule.forRoot(), // ToastrModule added
+    HttpClientModule,
+    BrowserAnimationsModule,
+    ToastrModule.forRoot(),
+    ReactiveFormsModule,
+    FormsModule,
   ],
   providers: [
     AppConfigInitService,
@@ -51,7 +62,7 @@ export function init_app(appLoadService: AppConfigInitService) {
       multi: true
     },
     {
-      provide : HTTP_INTERCEPTORS, useClass : JwtInterceptor, multi : true
+      provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true
     },
     provideCharts(withDefaultRegisterables())
   ],

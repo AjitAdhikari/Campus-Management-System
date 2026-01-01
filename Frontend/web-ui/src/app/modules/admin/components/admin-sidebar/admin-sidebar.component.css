@@ -1,0 +1,109 @@
+.cms-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #05292b 0%, #041c1d 100%);
+  color: #e6eef8;
+  min-height: 100vh;
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+  box-shadow: inset 8px 0 24px rgba(0,0,0,0.45);
+}
+
+.brand {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.brand-link {
+  color: inherit;
+  font-weight: 800;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 12px;
+  transform: translateY(6px);
+  font-size: 1.25rem;
+  letter-spacing: 0.6px
+}
+
+.section-title {
+  color: #c7d2fe;
+  margin: 0 0 0.6rem 0;
+  font-size: 0.95rem
+}
+
+.quick-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem
+}
+
+.quick-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none
+}
+
+.quick-link:hover {
+  background: rgba(255, 255, 255, 0.03)
+}
+
+.ql-icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  transition: background 0.18s ease;
+}
+
+.ql-icon svg { width: 20px; height: 20px; display: block }
+
+.ql-label {
+  font-weight: 600
+}
+
+.sidebar-footer {
+  text-align: center;
+  color: #94a3b8
+}
+
+/* Icon recolor: force svgs to follow the current text color so all modules match */
+.cms-sidebar .ql-icon svg * {
+  stroke: currentColor !important;
+  fill: none !important;
+  opacity: 0.95;
+}
+
+.cms-sidebar .quick-link.active .ql-icon { background: rgba(255,255,255,0.04) }
+
+/* Active and hover states */
+.cms-sidebar .quick-link.active,
+.cms-sidebar .quick-link.router-link-active {
+  background: rgba(14,165,164,0.12);
+  color: #9ff0ea;
+}
+
+@media (max-width:900px) {
+  .cms-sidebar {
+    display: none
+  }
+}
+
+@media (max-width:900px) {
+  .admin-sidebar {
+    display: none
+  }
+}
