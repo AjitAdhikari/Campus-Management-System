@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('role')->nullable();
             $table->string('subjects')->nullable();
             $table->string('avatar')->nullable(); // profile image path
-            $table->string('semesters')->nullable();      // user description
+            $table->string('semesters')->nullable();
+            $table->string('department')->nullable();
+            $table->decimal('fees', 10, 2)->nullable();
             $table->timestamps();
         });
     }

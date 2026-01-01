@@ -12,7 +12,13 @@ class Course extends Model
         'credit',
         'department',
         'semester',
+        'syllabus_path',
         'created_by'
+    ];
+
+    protected $casts = [
+        'credit' => 'integer',
+        'semester' => 'integer'
     ];
 
     public function faculties()

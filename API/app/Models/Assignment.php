@@ -21,7 +21,7 @@ class Assignment extends Model
 
     public function faculty()
     {
-        return $this->belongsTo(Faculty::class);
+        return $this->belongsTo(User::class, 'faculty_id');
     }
 
     public function submissions()

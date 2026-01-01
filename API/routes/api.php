@@ -66,10 +66,23 @@ Route::prefix('notices')->group(function () {
     // Class Schedules
     Route::apiResource('class-schedules', ClassScheduleController::class);
 
-    // Assignments
-    Route::apiResource('assignments', AssignmentController::class);
-    Route::post('assignment-submissions', [AssignmentSubmissionController::class, 'store']);
-    Route::put('assignment-submissions/{assignmentSubmission}', [AssignmentSubmissionController::class, 'update']);
+    // Assignments (Protected with auth:sanctum)
+    Route::middleware('auth:sanctum')->prefix('assignments')->group(function () {
+        Route::get('/', [AssignmentController::class, 'index']); // Faculty: get their assignments
+        Route::post('/', [AssignmentController::class, 'store']); // Faculty: create assignment
+        Route::get('/student', [AssignmentController::class, 'studentAssignments']); // Student: get assignments
+        Route::get('/{id}', [AssignmentController::class, 'show']); // Get single assignment
+        Route::post('/{id}', [AssignmentController::class, 'update']); // Update assignment
+        Route::delete('/{id}', [AssignmentController::class, 'destroy']); // Delete assignment
+        Route::get('/{id}/submissions', [AssignmentController::class, 'getSubmissions']); // Get submissions
+        Route::post('/{assignmentId}/submit', [AssignmentController::class, 'submitAssignment']); // Student submit
+        Route::post('/submissions/{submissionId}/feedback', [AssignmentController::class, 'updateSubmissionFeedback']); // Faculty feedback
+    });
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('assignment-submissions', [AssignmentSubmissionController::class, 'store']);
+        Route::put('assignment-submissions/{assignmentSubmission}', [AssignmentSubmissionController::class, 'update']);
+    });
 
     // Exams & Results
     Route::apiResource('exams', ExamController::class)->only(['index','store']);

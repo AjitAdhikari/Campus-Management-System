@@ -15,7 +15,8 @@ return new class extends Migration
             $table->integer('credit');
             $table->string('department');
             $table->integer('semester');
-            $table->foreignUuid('created_by')->constrained('users');
+            $table->string('syllabus_path')->nullable();
+            $table->foreignUuid('created_by')->nullable()->constrained('users');
             $table->timestamps();
         });
 

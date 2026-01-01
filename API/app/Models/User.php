@@ -67,4 +67,30 @@ class User extends Authenticatable
             }
         });
     }
+
+    // Relationships
+    public function profile()
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function enrolledCourses()
+    {
+        return $this->belongsToMany(Course::class, 'course_students', 'student_id', 'course_id');
+    }
+
+    public function assignedCourses()
+    {
+        return $this->belongsToMany(Course::class, 'course_faculty', 'faculty_id', 'course_id');
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'faculty_id');
+    }
+
+    public function submissions()
+    {
+        return $this->hasMany(AssignmentSubmission::class, 'student_id');
+    }
 }
