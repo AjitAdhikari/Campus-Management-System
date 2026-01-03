@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import StorageHelper from 'src/app/helpers/StorageHelper';
+import { AssignmentService } from 'src/app/services/assignment.service';
 import { AttendanceService } from 'src/app/services/attendance.service';
+import { Course, CourseService } from 'src/app/services/course.service';
 import { Notice, NoticeService } from 'src/app/services/notice.service';
+import { ClassSchedule, ScheduleService } from 'src/app/services/schedule.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,6 +14,11 @@ import { Notice, NoticeService } from 'src/app/services/notice.service';
 })
 export class DashboardComponent implements OnInit {
   announcements: Notice[] = [];
+  courses: Course[] = [];
+  schedules: ClassSchedule[] = [];
+  recentSubmissions: any[] = [];
+  selectedCourse: Course | null = null;
+  showSyllabusModal = false;
   showClockInModal = false;
   facultyId: string | number | null = null;
   facultyName: string = '';
@@ -22,11 +30,17 @@ export class DashboardComponent implements OnInit {
   constructor(
     private noticeService: NoticeService, 
     private router: Router,
-    private attendanceService: AttendanceService
+    private attendanceService: AttendanceService,
+    private courseService: CourseService,
+    private scheduleService: ScheduleService,
+    private assignmentService: AssignmentService
   ) {}
 
   ngOnInit() {
     this.loadAnnouncements();
+    this.loadFacultyCourses();
+    this.loadSchedules();
+    this.loadRecentSubmissions();
     this.checkAndShowClockInModal();
   }
 
@@ -37,6 +51,98 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading announcements:', error);
+      }
+    });
+  }
+
+  loadFacultyCourses() {
+    const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+    if (!userDetails) return;
+
+    try {
+      const user = JSON.parse(userDetails);
+      const facultyId = user?.id;
+      
+      if (!facultyId) return;
+
+      this.courseService.getFacultyCourses(facultyId).subscribe({
+        next: (courses) => {
+          this.courses = courses || [];
+        },
+        error: (error) => {
+          console.error('Error loading faculty courses:', error);
+        }
+      });
+    } catch (e) {
+      console.error('Error parsing user details:', e);
+    }
+  }
+
+  loadSchedules() {
+    const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+    if (!userDetails) return;
+
+    try {
+      const user = JSON.parse(userDetails);
+      const facultyId = user?.id;
+      
+      if (!facultyId) return;
+
+      this.scheduleService.getSchedules().subscribe({
+        next: (schedules) => {
+          const now = new Date();
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          
+          this.schedules = schedules
+            .filter(schedule => {
+              const scheduleDate = new Date(schedule.class_date);
+              const scheduleDateOnly = new Date(scheduleDate.getFullYear(), scheduleDate.getMonth(), scheduleDate.getDate());
+              return schedule.faculty_id == facultyId && 
+                     scheduleDateOnly >= today &&
+                     schedule.status === 'scheduled';
+            })
+            .sort((a, b) => {
+              const dateCompare = new Date(a.class_date).getTime() - new Date(b.class_date).getTime();
+              if (dateCompare !== 0) return dateCompare;
+              return a.start_time.localeCompare(b.start_time);
+            })
+            .slice(0, 5);
+        },
+        error: (error) => {
+          console.error('Error loading schedules:', error);
+        }
+      });
+    } catch (e) {
+      console.error('Error parsing user details:', e);
+    }
+  }
+
+  loadRecentSubmissions() {
+    this.assignmentService.getFacultyAssignments().subscribe({
+      next: (response) => {
+        if (response.success && Array.isArray(response.data)) {
+          const allSubmissions: any[] = [];
+          
+          response.data.forEach(assignment => {
+            if (assignment.submissions && assignment.submissions.length > 0) {
+              assignment.submissions.forEach(submission => {
+                allSubmissions.push({
+                  ...submission,
+                  assignment_id: assignment.id,
+                  assignmentTitle: assignment.title,
+                  assignmentCourse: assignment.course
+                });
+              });
+            }
+          });
+          
+          this.recentSubmissions = allSubmissions
+            .sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())
+            .slice(0, 5);
+        }
+      },
+      error: (error) => {
+        console.error('Error loading recent submissions:', error);
       }
     });
   }
@@ -155,5 +261,34 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/faculty/notices'], {
       queryParams: { noticeId: announcement.id }
     });
+  }
+
+  openSyllabus(course: Course) {
+    this.selectedCourse = course;
+    this.showSyllabusModal = true;
+  }
+
+  closeSyllabus() {
+    this.showSyllabusModal = false;
+    this.selectedCourse = null;
+  }
+
+  getSyllabusUrl(path: string | undefined): string {
+    if (!path) return '';
+    return `http://localhost:8000/storage/${path}`;
+  }
+
+  downloadSyllabus() {
+    if (!this.selectedCourse || !this.selectedCourse.syllabus_path) return;
+    const url = this.getSyllabusUrl(this.selectedCourse.syllabus_path);
+    window.open(url, '_blank');
+  }
+
+  isToday(date: string): boolean {
+    const scheduleDate = new Date(date);
+    const today = new Date();
+    return scheduleDate.getDate() === today.getDate() &&
+           scheduleDate.getMonth() === today.getMonth() &&
+           scheduleDate.getFullYear() === today.getFullYear();
   }
 }

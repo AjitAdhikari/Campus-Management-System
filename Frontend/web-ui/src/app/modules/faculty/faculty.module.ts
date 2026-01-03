@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { SharedModule } from '../shared/shared.module';
 
 import { FacultyRoutingModule } from './faculty-routing.module';
 
@@ -18,13 +19,14 @@ import { ScheduleComponent } from './pages/schedule/schedule.component';
     GradesComponent,
     NoticesComponent,
     ScheduleComponent,
-    AttendanceComponent,
+    AttendanceComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    FacultyRoutingModule
+    FacultyRoutingModule,
+    SharedModule
   ],
   exports: []
 })

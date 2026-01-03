@@ -25,7 +25,8 @@ export class ScheduleComponent implements OnInit {
   scheduleTypes = [
     { value: 'scheduled', label: 'Scheduled' },
     { value: 'cancelled', label: 'Cancelled' },
-    { value: 'rescheduled', label: 'Rescheduled' }
+    { value: 'rescheduled', label: 'Rescheduled' },
+    { value: 'lab', label: 'Lab' }
   ];
 
   constructor(

@@ -1,55 +1,95 @@
 <div class="dashboard-root">
 	<main class="dashboard-grid">
-		<section class="panel quick-links">
-			<h3 class="panel-title">Quick Links</h3>
-			<div class="links-grid">
-				<a class="link-card" routerLink="/faculty/schedule">
-					<div class="link-icon bg-5">
-						<svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<rect x="3" y="4" width="18" height="16" rx="2" stroke="#6d28d9" stroke-width="1.2" />
-							<path d="M7 9h10M7 13h10M7 17h6" stroke="#6d28d9" stroke-width="1.2" stroke-linecap="round"
-								stroke-linejoin="round" />
-							<path d="M16 3v3" stroke="#6d28d9" stroke-width="1.2" stroke-linecap="round" />
+		<section class="panel my-courses" *ngIf="courses.length > 0">
+			<h3 class="panel-title">My Assigned Courses</h3>
+			<div class="courses-grid">
+				<div *ngFor="let course of courses" class="course-card" (click)="openSyllabus(course)">
+					<div class="course-icon">
+						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M12 14l9-5-9-5-9 5 9 5z" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M12 14v7" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 						</svg>
 					</div>
-					<div class="link-label">Manage Schedule</div>
-				</a>
-
-				<a class="link-card" routerLink="/faculty/assignments">
-					<div class="link-icon bg-2">
-						<svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#9b3412"
-								stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
-							<path d="M14 2v6h6" stroke="#9b3412" stroke-width="1.2" stroke-linecap="round"
-								stroke-linejoin="round" />
-						</svg>
+					<div class="course-info">
+						<h4 class="course-name">{{ course.course_name }}</h4>
+						<p class="course-code">{{ course.course_code }}</p>
+						<div class="course-meta">
+							<span class="course-credit">{{ course.credit }} Credits</span>
+							<span class="course-semester">Semester {{ course.semester }}</span>
+						</div>
 					</div>
-					<div class="link-label">Manage Assignment</div>
-				</a>
-
-				<a class="link-card" routerLink="/faculty/grades">
-					<div class="link-icon bg-3">
-						<svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M9 12l2 2 4-4" stroke="#065f46" stroke-width="1.4" stroke-linecap="round"
-								stroke-linejoin="round" />
-							<rect x="3" y="4" width="18" height="16" rx="2" stroke="#065f46" stroke-width="1.2" />
-						</svg>
-					</div>
-					<div class="link-label">Grade Submission</div>
-				</a>
-
-				<a class="link-card" routerLink="/faculty/notices">
-					<div class="link-icon bg-4">
-						<svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M15 17H9v-5a3 3 0 016 0v5z" stroke="#92400e" stroke-width="1.2"
-								stroke-linecap="round" stroke-linejoin="round" />
-							<path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7" stroke="#92400e" stroke-width="1.2"
-								stroke-linecap="round" stroke-linejoin="round" />
-						</svg>
-					</div>
-					<div class="link-label">Notices</div>
-				</a>
+				</div>
 			</div>
+		</section>
+
+		<section class="panel upcoming-schedule">
+			<h3 class="panel-title">Upcoming Classes</h3>
+			<div class="schedule-list" *ngIf="schedules.length > 0; else noSchedules">
+				<div *ngFor="let schedule of schedules" class="schedule-item" [class.today]="isToday(schedule.class_date)" [routerLink]="['/faculty/schedule']">
+					<div class="schedule-time">
+						<div class="time-label">{{ schedule.start_time.substring(0, 5) }}</div>
+						<div class="time-separator">-</div>
+						<div class="time-label">{{ schedule.end_time.substring(0, 5) }}</div>
+					</div>
+					<div class="schedule-details">
+						<h4 class="schedule-course">{{ schedule.course?.course_name || 'Unknown Course' }}</h4>
+						<div class="schedule-meta">
+							<span class="schedule-date">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
+									<path d="M8 2v4M16 2v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+								</svg>
+								{{ schedule.class_date | date: 'MMM d, yyyy' }}
+							</span>
+							<span class="schedule-room" *ngIf="schedule.room">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+									<path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+								</svg>
+								Room {{ schedule.room }}
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<ng-template #noSchedules>
+				<p class="muted small">No upcoming classes scheduled.</p>
+			</ng-template>
+		</section>
+
+		<section class="panel recent-submissions">
+			<h3 class="panel-title">Recently Submitted Assignments</h3>
+			<div class="submissions-list" *ngIf="recentSubmissions.length > 0; else noSubmissions">
+				<div *ngFor="let submission of recentSubmissions" class="submission-card" [routerLink]="['/faculty/assignments']">
+					<div class="submission-icon">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M9 12l2 2 4-4" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M14 2v6h6" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+					</div>
+					<div class="submission-info">
+						<h4 class="submission-student">{{ submission.student?.name || 'Unknown Student' }}</h4>
+						<p class="submission-assignment">{{ submission.assignmentTitle || 'Assignment' }}</p>
+						<div class="submission-meta">
+							<span class="submission-time">
+								<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+									<path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+								</svg>
+								{{ submission.submitted_at | date: 'MMM d, h:mm a' }}
+							</span>
+							<span class="submission-status" [class.graded]="submission.grade">
+								{{ submission.grade ? 'Graded' : 'Pending Review' }}
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<ng-template #noSubmissions>
+				<p class="muted small">No recent submissions.</p>
+			</ng-template>
 		</section>
 
 		<aside class="panel announcements">
@@ -69,6 +109,43 @@
 			<p class="muted small">See the notice board for full details.</p>
 		</aside>
 	</main>
+</div>
+
+<!-- Syllabus Modal -->
+<div class="modal-overlay" *ngIf="showSyllabusModal" (click)="closeSyllabus()">
+	<div class="modal-content" (click)="$event.stopPropagation()">
+		<div class="modal-header">
+			<h3>{{ selectedCourse?.course_name }} - Syllabus</h3>
+			<button class="close-btn" (click)="closeSyllabus()">&times;</button>
+		</div>
+		<div class="modal-body">
+			<div class="course-details">
+				<p><strong>Course Code:</strong> {{ selectedCourse?.course_code }}</p>
+				<p><strong>Credits:</strong> {{ selectedCourse?.credit }}</p>
+				<p><strong>Semester:</strong> {{ selectedCourse?.semester }}</p>
+				<p><strong>Department:</strong> {{ selectedCourse?.department }}</p>
+			</div>
+			<div class="syllabus-viewer" *ngIf="selectedCourse?.syllabus_path; else noSyllabus">
+				<iframe [src]="getSyllabusUrl(selectedCourse?.syllabus_path) | safe: 'resourceUrl'" 
+						width="100%" 
+						height="500px"
+						frameborder="0">
+				</iframe>
+			</div>
+			<ng-template #noSyllabus>
+				<p class="no-syllabus">No syllabus available for this course.</p>
+			</ng-template>
+		</div>
+		<div class="modal-footer" *ngIf="selectedCourse?.syllabus_path">
+			<button class="btn-download" (click)="downloadSyllabus()">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+				Download Syllabus
+			</button>
+			<button class="btn-close" (click)="closeSyllabus()">Close</button>
+		</div>
+	</div>
 </div>
 
 
