@@ -49,4 +49,26 @@ export class CourseService {
   getDepartments(): Observable<Department[]> {
     return this.http.get<Department[]>(`${this.apiUrl}/departments`);
   }
+
+  getFacultyCourses(facultyId: string | number): Observable<Course[]> {
+    return this.http.get<Course[]>(`${this.apiUrl}/faculty/${facultyId}/courses`);
+  }
+
+  assignCourseToFaculty(facultyId: string | number, courseId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/faculty/assign-course`, {
+      faculty_id: facultyId,
+      course_id: courseId
+    });
+  }
+
+  getStudentCourses(studentId: string | number): Observable<Course[]> {
+    return this.http.get<Course[]>(`${this.apiUrl}/student/${studentId}/courses`);
+  }
+
+  assignCoursesToStudent(studentId: string | number, semester: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/student/assign-courses`, {
+      student_id: studentId,
+      semester: semester
+    });
+  }
 }

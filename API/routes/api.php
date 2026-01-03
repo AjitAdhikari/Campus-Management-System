@@ -62,8 +62,10 @@ Route::prefix('notices')->group(function () {
 
  // Courses
     Route::apiResource('courses', CourseController::class);
-
-    // Class Schedules
+    Route::get('faculty/{facultyId}/courses', [CourseController::class, 'getFacultyCourses']);
+    Route::post('faculty/assign-course', [CourseController::class, 'assignCourseToFaculty']);
+Route::get('student/{studentId}/courses', [CourseController::class, 'getStudentCourses']);
+Route::post('student/assign-courses', [CourseController::class, 'assignCoursesToStudent']);
     Route::apiResource('class-schedules', ClassScheduleController::class);
 
     // Assignments (Protected with auth:sanctum)

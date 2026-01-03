@@ -10,11 +10,6 @@ class Attendance extends Model
 
     protected $fillable = [
         'faculty_id',
-        'clock_in_time',
-    ];
-
-    protected $casts = [
-        'clock_in_time' => 'datetime',
     ];
 
     public function faculty()

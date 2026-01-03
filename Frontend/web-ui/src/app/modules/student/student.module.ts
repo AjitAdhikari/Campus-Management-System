@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { SharedModule } from '../shared/shared.module';
 
 import { AssignmentsComponent } from './pages/assignments/assignments.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
@@ -23,7 +24,8 @@ import { StudentRoutingModule } from './student-routing.module';
   imports: [
     CommonModule,
     FormsModule,
-    StudentRoutingModule
+    StudentRoutingModule,
+    SharedModule
   ]
 })
 export class StudentModule { }

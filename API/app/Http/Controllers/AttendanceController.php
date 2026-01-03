@@ -87,7 +87,6 @@ class AttendanceController extends Controller
 
             $attendance = Attendance::create([
                 'faculty_id' => $request->faculty_id,
-                'clock_in_time' => now(),
             ]);
 
             return response()->json([

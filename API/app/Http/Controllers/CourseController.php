@@ -47,6 +47,26 @@ class CourseController extends Controller
             'created_by' => Auth::id()
         ]);
 
+        // Automatically assign course to all students in the same semester
+        $students = \App\Models\User::whereHas('profile', function($query) use ($request) {
+            $query->where('role', 'Student')
+                  ->where('semesters', (string)$request->semester);
+        })->get();
+
+        foreach ($students as $student) {
+            $exists = \DB::table('course_students')
+                ->where('student_id', $student->id)
+                ->where('course_id', $course->id)
+                ->exists();
+
+            if (!$exists) {
+                \DB::table('course_students')->insert([
+                    'student_id' => $student->id,
+                    'course_id' => $course->id
+                ]);
+            }
+        }
+
         return response()->json($course, 201);
     }
 
@@ -100,5 +120,116 @@ class CourseController extends Controller
 
         $course->delete();
         return response()->json(['message' => 'Course deleted successfully']);
+    }
+
+    public function getFacultyCourses($facultyId)
+    {
+        $user = \App\Models\User::find($facultyId);
+        
+        if (!$user) {
+            return response()->json(['error' => 'Faculty not found'], 404);
+        }
+
+        $courses = $user->assignedCourses()
+            ->orderBy('semester', 'asc')
+            ->orderBy('course_name', 'asc')
+            ->get();
+
+        return response()->json($courses);
+    }
+
+    public function assignCourseToFaculty(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'faculty_id' => 'required',
+            'course_id' => 'required|exists:courses,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = \App\Models\User::find($request->faculty_id);
+        
+        if (!$user) {
+            return response()->json(['error' => 'Faculty not found'], 404);
+        }
+
+        // Check if already assigned
+        $exists = \DB::table('course_faculty')
+            ->where('faculty_id', $request->faculty_id)
+            ->where('course_id', $request->course_id)
+            ->exists();
+
+        if (!$exists) {
+            \DB::table('course_faculty')->insert([
+                'faculty_id' => $request->faculty_id,
+                'course_id' => $request->course_id,
+                'assigned_at' => now()
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Course assigned to faculty successfully'
+        ]);
+    }
+
+    public function getStudentCourses($studentId)
+    {
+        $user = \App\Models\User::find($studentId);
+        
+        if (!$user) {
+            return response()->json(['error' => 'Student not found'], 404);
+        }
+
+        $courses = $user->enrolledCourses()
+            ->orderBy('semester', 'asc')
+            ->orderBy('course_name', 'asc')
+            ->get();
+
+        return response()->json($courses);
+    }
+
+    public function assignCoursesToStudent(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'student_id' => 'required',
+            'semester' => 'required|integer|min:1|max:8'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = \App\Models\User::find($request->student_id);
+        
+        if (!$user) {
+            return response()->json(['error' => 'Student not found'], 404);
+        }
+
+        // Get all courses for the student's semester
+        $courses = Course::where('semester', $request->semester)->get();
+
+        // Assign each course to the student
+        foreach ($courses as $course) {
+            $exists = \DB::table('course_students')
+                ->where('student_id', $request->student_id)
+                ->where('course_id', $course->id)
+                ->exists();
+
+            if (!$exists) {
+                \DB::table('course_students')->insert([
+                    'student_id' => $request->student_id,
+                    'course_id' => $course->id
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Courses assigned to student successfully',
+            'courses_count' => $courses->count()
+        ]);
     }
 }

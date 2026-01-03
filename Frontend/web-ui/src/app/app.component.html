@@ -2,7 +2,6 @@
   <app-admin-sidebar *ngIf="isLoggedIn() && isAdminRoute()"></app-admin-sidebar>
   <app-faculty-sidebar *ngIf="isLoggedIn() && isFacultyRoute()"></app-faculty-sidebar>
   <app-student-sidebar *ngIf="isLoggedIn() && isStudentRoute()"></app-student-sidebar>
-  <app-clockin-popup *ngIf="isLoggedIn() && isFacultyRoute()"></app-clockin-popup>
   <div class="main">
     <app-header *ngIf="!isLoginRoute() && isAdminRoute()"></app-header>
     <app-faculty-header *ngIf="!isLoginRoute() && isFacultyRoute()"></app-faculty-header>
