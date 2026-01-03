@@ -4,18 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ExamResult extends Model
+class Grade extends Model
 {
-    public $timestamps = false;
-
     protected $fillable = [
-        'exam_id',
         'student_id',
+        'course_id',
         'faculty_id',
         'marks',
         'grade',
-        'status',
-        'uploaded_at'
+        'status'
     ];
 
     /**
@@ -44,14 +41,14 @@ class ExamResult extends Model
         return $marks >= 45 ? 'Pass' : 'Fail';
     }
 
-    public function exam()
-    {
-        return $this->belongsTo(Exam::class);
-    }
-
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
     }
 
     public function faculty()

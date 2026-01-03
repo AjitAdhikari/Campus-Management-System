@@ -232,4 +232,21 @@ class CourseController extends Controller
             'courses_count' => $courses->count()
         ]);
     }
+
+    public function getCourseStudents($courseId)
+    {
+        $course = Course::find($courseId);
+        
+        if (!$course) {
+            return response()->json(['error' => 'Course not found'], 404);
+        }
+
+        $students = \DB::table('course_students')
+            ->join('users', 'course_students.student_id', '=', 'users.id')
+            ->where('course_students.course_id', $courseId)
+            ->select('users.id', 'users.name', 'users.email')
+            ->get();
+
+        return response()->json($students);
+    }
 }

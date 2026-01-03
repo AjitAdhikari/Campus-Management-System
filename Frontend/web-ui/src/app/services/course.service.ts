@@ -71,4 +71,20 @@ export class CourseService {
       semester: semester
     });
   }
+
+  getCourseStudents(courseId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/courses/${courseId}/students`);
+  }
+
+  submitGrades(payload: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/grades/submit`, payload);
+  }
+
+  getStudentResults(studentId: string | number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/student/${studentId}/results`);
+  }
+
+  getFacultyGrades(facultyId: string | number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/faculty/${facultyId}/grades`);
+  }
 }

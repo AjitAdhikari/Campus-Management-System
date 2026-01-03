@@ -23,8 +23,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('exam_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('student_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('faculty_id')->constrained('users')->cascadeOnDelete();
             $table->decimal('marks', 5, 2);
-            $table->string('grade')->nullable();
+            $table->string('grade', 3);
+            $table->enum('status', ['Pass', 'Fail']);
             $table->timestamp('uploaded_at')->useCurrent();
             $table->unique(['exam_id', 'student_id']);
         });

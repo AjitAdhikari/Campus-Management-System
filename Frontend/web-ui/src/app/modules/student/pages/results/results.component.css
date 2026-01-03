@@ -20,6 +20,25 @@
 	margin-bottom: 10px;
 }
 
+.messages {
+	margin-bottom: 12px;
+}
+
+.messages .error {
+	color: #b00020;
+	background: #ffebee;
+	padding: 8px 12px;
+	border-radius: 4px;
+	margin-bottom: 8px;
+}
+
+.messages .info {
+	color: #1976d2;
+	background: #e3f2fd;
+	padding: 8px 12px;
+	border-radius: 4px;
+}
+
 .page-title {
 	margin: 0;
 	font-size: 20px;

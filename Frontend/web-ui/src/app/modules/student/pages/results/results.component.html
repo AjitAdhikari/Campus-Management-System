@@ -5,7 +5,12 @@
 				<h2 class="page-title">Results</h2>
 				<p class="muted">View your subjects, marks, and grades.</p>
 			</div>
-			<button class="primary" type="button" (click)="downloadReport()">Download Report (PDF)</button>
+			<button class="primary" type="button" (click)="downloadReport()" [disabled]="results.length === 0 || isLoading">Download Report (PDF)</button>
+		</div>
+
+		<div class="messages" *ngIf="errorMessage || isLoading">
+			<div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+			<div class="info" *ngIf="isLoading">Loading results...</div>
 		</div>
 
 		<div class="table-wrapper">
@@ -14,30 +19,28 @@
 					<tr>
 						<th>Subject</th>
 						<th>Code</th>
-						<th>Semester</th>
 						<th>Marks</th>
 						<th>Grade</th>
 						<th>Status</th>
+						<th>Faculty</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr *ngFor="let result of results">
-						<td class="title">{{ result.subjectName }}</td>
-						<td class="muted">{{ result.code }}</td>
-						<td>{{ result.semester }}</td>
-						<td>{{ result.mark }} / 100</td>
+						<td class="title">{{ result.course_name }}</td>
+						<td class="muted">{{ result.course_code }}</td>
+						<td>{{ result.marks }} / 100</td>
 						<td><span class="grade">{{ result.grade }}</span></td>
 						<td>
 							<span class="status" [ngClass]="statusClass(result.status)">{{ result.status }}</span>
 						</td>
+						<td>{{ result.faculty_name }}</td>
 					</tr>
-					<tr *ngIf="results.length === 0">
+					<tr *ngIf="results.length === 0 && !isLoading">
 						<td colspan="6" class="empty">No published results yet.</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
-
-		<p class="muted small">Last updated: {{ lastUpdated }}</p>
 	</section>
 </div>

@@ -1,52 +1,87 @@
 <div class="grades-form">
 	<h2>Grade Submission</h2>
 
+	<div class="messages">
+		<div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+		<div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+		<div class="info" *ngIf="isLoading">Loading...</div>
+	</div>
+
+	<!-- Toggle Button -->
+	<div class="toggle-section" *ngIf="submittedGrades.length > 0">
+		<button type="button" class="toggle-btn" (click)="toggleSubmittedGrades()">
+			{{ showSubmittedGrades ? 'Hide' : 'View' }} Submitted Grades ({{ submittedGrades.length }})
+		</button>
+	</div>
+
+	<!-- Submitted Grades Table -->
+	<div class="submitted-grades" *ngIf="showSubmittedGrades && submittedGrades.length > 0">
+		<h3>Submitted Grades</h3>
+		<div class="table-wrapper">
+			<table class="grades-table">
+				<thead>
+					<tr>
+						<th>Student</th>
+						<th>Course</th>
+						<th>Code</th>
+						<th>Marks</th>
+						<th>Grade</th>
+						<th>Status</th>
+						<th>Submitted</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let grade of submittedGrades">
+						<td>{{ grade.student_name }}</td>
+						<td>{{ grade.course_name }}</td>
+						<td class="muted">{{ grade.course_code }}</td>
+						<td>{{ grade.marks }} / 100</td>
+						<td><span class="grade-badge">{{ grade.grade }}</span></td>
+						<td><span class="status-badge" [ngClass]="statusClass(grade.status)">{{ grade.status }}</span></td>
+						<td class="muted">{{ grade.uploaded_at | date:'short' }}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
 	<form [formGroup]="form" (ngSubmit)="submit()">
 		<div class="form-row">
-			<label for="semester">Semester</label>
-			<select id="semester" formControlName="semester">
-				<option value="">-- Select semester --</option>
-				<option *ngFor="let s of semesters" [value]="s">{{ s }}</option>
+			<label for="course">Course</label>
+			<select id="course" formControlName="course">
+				<option value="">-- Select course --</option>
+				<option *ngFor="let course of courses" [value]="course.id">
+					{{ course.course_name }} ({{ course.course_code }})
+				</option>
 			</select>
 		</div>
 
-		<div class="form-row">
-			<label for="subject">Subject</label>
-			<select id="subject" formControlName="subject">
-				<option value="">-- Select subject --</option>
-				<option *ngFor="let sub of subjects" [value]="sub.id">{{ sub.name }}</option>
-			</select>
-		</div>
-
-		<div class="messages">
-			<div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
-			<div class="success" *ngIf="successMessage">{{ successMessage }}</div>
-		</div>
-
-		<div class="students-table" formArrayName="marks">
+		<div class="students-table" formArrayName="marks" *ngIf="students.length > 0">
 			<div class="table-header">
-				<div>Student</div>
-				<div>Roll No</div>
+				<div>Student Name</div>
 				<div>Mark (0-100)</div>
 			</div>
 			<div class="table-row" *ngFor="let ctrl of markGroups; let i = index" [formGroup]="ctrl">
 				<div class="student-name">{{ ctrl.get('name')?.value }}</div>
-				<div class="student-reg">{{ i + 1 }}</div>
 				<div class="student-mark">
-					<input type="number" formControlName="mark" min="0" max="100" />
+					<input type="number" formControlName="mark" min="0" max="100" step="0.5" />
 					<div class="field-error"
 						*ngIf="ctrl.get('mark')?.invalid && (ctrl.get('mark')?.touched || form.touched)">
-						<small *ngIf="ctrl.get('mark')?.errors?.required">Required</small>
-						<small *ngIf="ctrl.get('mark')?.errors?.min">Min 0</small>
-						<small *ngIf="ctrl.get('mark')?.errors?.max">Max 100</small>
+						<small *ngIf="ctrl.get('mark')?.errors?.['required']">Required</small>
+						<small *ngIf="ctrl.get('mark')?.errors?.['min']">Min 0</small>
+						<small *ngIf="ctrl.get('mark')?.errors?.['max']">Max 100</small>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="actions">
-			<button type="submit">Submit Marks</button>
-			<button type="button" (click)="resetForm()">Reset</button>
+		<div class="no-data" *ngIf="form.get('course')?.value && students.length === 0 && !isLoading">
+			<p>No students enrolled in this course.</p>
+		</div>
+
+		<div class="actions" *ngIf="students.length > 0">
+			<button type="submit" [disabled]="isLoading || form.invalid">Submit Marks</button>
+			<button type="button" (click)="resetForm()" [disabled]="isLoading">Reset</button>
 		</div>
 	</form>
 </div>

@@ -64,8 +64,9 @@ Route::prefix('notices')->group(function () {
     Route::apiResource('courses', CourseController::class);
     Route::get('faculty/{facultyId}/courses', [CourseController::class, 'getFacultyCourses']);
     Route::post('faculty/assign-course', [CourseController::class, 'assignCourseToFaculty']);
-Route::get('student/{studentId}/courses', [CourseController::class, 'getStudentCourses']);
-Route::post('student/assign-courses', [CourseController::class, 'assignCoursesToStudent']);
+    Route::get('courses/{courseId}/students', [CourseController::class, 'getCourseStudents']);
+    Route::get('student/{studentId}/courses', [CourseController::class, 'getStudentCourses']);
+    Route::post('student/assign-courses', [CourseController::class, 'assignCoursesToStudent']);
     Route::apiResource('class-schedules', ClassScheduleController::class);
 
     // Assignments (Protected with auth:sanctum)
@@ -90,6 +91,11 @@ Route::post('student/assign-courses', [CourseController::class, 'assignCoursesTo
     Route::apiResource('exams', ExamController::class)->only(['index','store']);
     Route::post('exam-results', [ExamResultController::class, 'store']);
     Route::get('exam-results/{studentId}', [ExamResultController::class, 'show']);
+
+    // Grades (using ExamResultController)
+    Route::post('grades/submit', [ExamResultController::class, 'submitGrades']);
+    Route::get('student/{studentId}/results', [ExamResultController::class, 'show']);
+    Route::get('faculty/{facultyId}/grades', [ExamResultController::class, 'getFacultyGrades']);
 
 
        // Departments

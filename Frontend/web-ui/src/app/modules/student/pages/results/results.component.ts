@@ -1,7 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { GradeService, StudentResult } from 'src/app/services/grade.service';
+import StorageHelper from 'src/app/helpers/StorageHelper';
+import { CourseService } from 'src/app/services/course.service';
 
 type ResultStatus = 'Pass' | 'Fail';
+
+interface Result {
+  id: number;
+  course_name: string;
+  course_code: string;
+  marks: number;
+  grade: string;
+  status: ResultStatus;
+  faculty_name: string;
+  uploaded_at: string;
+}
 
 @Component({
   selector: 'app-results',
@@ -9,45 +21,65 @@ type ResultStatus = 'Pass' | 'Fail';
   styleUrls: ['./results.component.css']
 })
 export class ResultsComponent implements OnInit {
-  results: Array<StudentResult & { code?: string }> = [];
-  lastUpdated: string = 'Dec 2025';
+  results: Result[] = [];
+  isLoading = false;
+  errorMessage = '';
+  studentId: string | null = null;
 
-  constructor(private gradeService: GradeService) { }
+  constructor(private courseService: CourseService) { }
 
   ngOnInit(): void {
-    this.gradeService.getStudentResults(1).subscribe(items => {
-      this.results = items
-        .map(i => ({ ...i, code: this.mapSubjectCode(i.subjectId) }))
-        .slice(0, 1); 
-    });
+    this.loadResults();
   }
 
-  mapSubjectCode(subjectId: string | number | undefined): string | undefined {
-    const map: Record<string, string> = {
-      math: 'MTH-201',
-      eng: 'ENG-110',
-      sci: 'SCI-205',
-      hist: 'HIS-220',
-      cs: 'CSE-230',
-      eco: 'ECO-150'
-    };
-    if (subjectId == null) return undefined;
-    return map[subjectId.toString()] || undefined;
+  loadResults(): void {
+    const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+    if (!userDetails) {
+      this.errorMessage = 'User not logged in. Please login again.';
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userDetails);
+      this.studentId = user?.id;
+      
+      if (!this.studentId) {
+        this.errorMessage = 'Student ID not found. Please login again.';
+        return;
+      }
+
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      this.courseService.getStudentResults(this.studentId).subscribe({
+        next: (results) => {
+          this.results = results;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error loading results:', err);
+          this.errorMessage = 'Failed to load results. Please try again.';
+          this.isLoading = false;
+        }
+      });
+    } catch (e) {
+      console.error('Error parsing user details:', e);
+      this.errorMessage = 'Error loading user information. Please login again.';
+    }
   }
 
   downloadReport(): void {
-    // Simple print-to-PDF approach: open a printable window with the table
     const title = 'Student Result Report';
     const date = new Date().toLocaleString();
 
     const tableRows = this.results.map(r => `
       <tr>
-        <td>${this.escape(r.subjectName)}</td>
-        <td>${this.escape(r.code || '')}</td>
-        <td>${this.escape(r.semester)}</td>
-        <td>${r.mark} / 100</td>
+        <td>${this.escape(r.course_name)}</td>
+        <td>${this.escape(r.course_code)}</td>
+        <td>${r.marks} / 100</td>
         <td>${this.escape(r.grade)}</td>
         <td>${this.escape(r.status)}</td>
+        <td>${this.escape(r.faculty_name)}</td>
       </tr>`).join('');
 
     const html = `<!DOCTYPE html>
@@ -72,10 +104,10 @@ export class ResultsComponent implements OnInit {
             <tr>
               <th>Subject</th>
               <th>Code</th>
-              <th>Semester</th>
               <th>Marks</th>
               <th>Grade</th>
               <th>Status</th>
+              <th>Faculty</th>
             </tr>
           </thead>
           <tbody>

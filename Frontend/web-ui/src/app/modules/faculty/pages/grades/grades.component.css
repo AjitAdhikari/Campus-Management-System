@@ -1,5 +1,5 @@
 .grades-form {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 12px auto;
     padding: 12px;
     border: 1px solid #e0e0e0;
@@ -9,6 +9,33 @@
 
 .grades-form h2 {
     margin: 0 0 12px 0;
+}
+
+.messages {
+    margin-bottom: 12px;
+}
+
+.messages .error {
+    color: #b00020;
+    background: #ffebee;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.messages .success {
+    color: #0a7a0a;
+    background: #e8f5e9;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.messages .info {
+    color: #1976d2;
+    background: #e3f2fd;
+    padding: 8px 12px;
+    border-radius: 4px;
 }
 
 .form-row {
@@ -23,22 +50,23 @@
     font-weight: 600;
 }
 
-.form-row select,
-.form-row input[type="file"],
-.form-row input[type="number"] {
+.form-row select {
     flex: 1 1 auto;
     padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 .students-table {
     margin-top: 12px;
     border-top: 1px solid #eee;
+    padding-top: 12px;
 }
 
 .table-header,
 .table-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 8px;
     padding: 8px 4px;
     align-items: center;
@@ -46,31 +74,167 @@
 
 .table-header {
     font-weight: 700;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 2px solid #f0f0f0;
+    background: #fafafa;
 }
 
-.table-row:nth-child(odd) {
+.table-row:nth-child(even) {
     background: #fbfbfb;
 }
 
 .student-mark input {
-    width: 90px;
+    width: 100%;
+    max-width: 120px;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 24px;
+    color: #666;
+    background: #f9f9f9;
+    border-radius: 4px;
+    margin-top: 12px;
 }
 
 .actions {
-    margin-top: 12px;
+    margin-top: 16px;
     display: flex;
     gap: 8px;
 }
 
-.messages .error {
-    color: #b00020;
+.actions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
 }
 
-.messages .success {
-    color: #0a7a0a;
+.actions button[type="submit"] {
+    background: #4f46e5;
+    color: white;
+}
+
+.actions button[type="submit"]:hover:not(:disabled) {
+    background: #4338ca;
+}
+
+.actions button[type="button"] {
+    background: #6b7280;
+    color: white;
+}
+
+.actions button[type="button"]:hover:not(:disabled) {
+    background: #4b5563;
+}
+
+.actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .field-error small {
     color: #b00020;
+    font-size: 12px;
+    display: block;
+    margin-top: 2px;
+}
+
+.toggle-section {
+    margin: 12px 0;
+}
+
+.toggle-btn {
+    padding: 8px 16px;
+    background: #e0e7ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.toggle-btn:hover {
+    background: #c7d2fe;
+}
+
+.submitted-grades {
+    margin: 16px 0;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+.submitted-grades h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #334155;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+.grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.grades-table th,
+.grades-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.grades-table th {
+    background: #f9fafb;
+    font-weight: 700;
+    font-size: 13px;
+    color: #374151;
+}
+
+.grades-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.grades-table .muted {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.grade-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.status-badge.pass {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.fail {
+    background: #fee2e2;
+    color: #991b1b;
 }

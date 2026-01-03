@@ -1,18 +1,15 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Exam;
 use App\Models\ExamResult;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class ExamResultController extends Controller
+class GradeController extends Controller
 {
-    public function store(Request $request)
-    {
-        return ExamResult::create($request->all());
-    }
-
     /**
      * Submit grades for students in a course
      */
@@ -84,7 +81,7 @@ class ExamResultController extends Controller
     /**
      * Get student results - all courses with marks and grades
      */
-    public function show($studentId)
+    public function getStudentResults($studentId)
     {
         try {
             $results = ExamResult::with(['exam.course', 'faculty'])
@@ -108,39 +105,6 @@ class ExamResultController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to fetch results',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get all grades submitted by a faculty member
-     */
-    public function getFacultyGrades($facultyId)
-    {
-        try {
-            $results = ExamResult::with(['exam.course', 'student'])
-                ->where('faculty_id', $facultyId)
-                ->orderBy('uploaded_at', 'desc')
-                ->get()
-                ->map(function ($result) {
-                    return [
-                        'id' => $result->id,
-                        'student_name' => $result->student->name ?? 'N/A',
-                        'course_name' => $result->exam->course->course_name ?? 'N/A',
-                        'course_code' => $result->exam->course->course_code ?? 'N/A',
-                        'marks' => $result->marks,
-                        'grade' => $result->grade,
-                        'status' => $result->status,
-                        'uploaded_at' => $result->uploaded_at
-                    ];
-                });
-
-            return response()->json($results, 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to fetch faculty grades',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -1,15 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import StorageHelper from 'src/app/helpers/StorageHelper';
+import { Course, CourseService } from 'src/app/services/course.service';
 
 interface Student {
-  id: number | string;
+  id: string;
   name: string;
-  regNo?: string;
 }
 
-interface Subject {
-  id: number | string;
-  name: string;
+interface SubmittedGrade {
+  id: number;
+  student_name: string;
+  course_name: string;
+  course_code: string;
+  marks: number;
+  grade: string;
+  status: string;
+  uploaded_at: string;
 }
 
 @Component({
@@ -20,54 +27,118 @@ interface Subject {
 export class GradesComponent implements OnInit {
   form: FormGroup;
   students: Student[] = [];
-  subjects: Subject[] = [];
-  semesters: string[] = [];
+  courses: Course[] = [];
+  facultyId: string | null = null;
+  submittedGrades: SubmittedGrade[] = [];
+  showSubmittedGrades = false;
 
   successMessage = '';
   errorMessage = '';
+  isLoading = false;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private courseService: CourseService
+  ) {
     this.form = this.fb.group({
-      semester: ['', Validators.required],
-      subject: ['', Validators.required],
+      course: ['', Validators.required],
       marks: this.fb.array([])
     });
   }
 
   ngOnInit(): void {
-    this.students = [
-      { id: 1, name: 'Alice Johnson', regNo: 'S001' },
-      { id: 2, name: 'Bob Smith', regNo: 'S002' },
-      { id: 3, name: 'Carla Gomez', regNo: 'S003' }
-    ];
+    this.loadFacultyCourses();
+    this.loadSubmittedGrades();
+    
+    // Watch for course changes to load students
+    this.form.get('course')?.valueChanges.subscribe(courseId => {
+      if (courseId) {
+        this.loadCourseStudents(courseId);
+      } else {
+        this.students = [];
+        this.clearMarksArray();
+      }
+    });
+  }
 
-    this.subjects = [
-      { id: 'math', name: 'Mathematics' },
-      { id: 'eng', name: 'English' },
-      { id: 'sci', name: 'Science' }
-    ];
+  loadFacultyCourses(): void {
+    const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+    if (!userDetails) {
+      this.errorMessage = 'User not logged in. Please login again.';
+      return;
+    }
 
-    this.semesters = [
-      'Semester 1',
-      'Semester 2',
-      'Semester 3',
-      'Semester 4',
-      'Semester 5',
-      'Semester 6',
-      'Semester 7',
-      'Semester 8'
-    ];
+    try {
+      const user = JSON.parse(userDetails);
+      this.facultyId = user?.id;
+      
+      if (!this.facultyId) {
+        this.errorMessage = 'Faculty ID not found. Please login again.';
+        return;
+      }
 
-    // initialize form array for students
+      this.isLoading = true;
+      this.errorMessage = '';
+      
+      this.courseService.getFacultyCourses(this.facultyId).subscribe({
+        next: (courses) => {
+          this.courses = courses || [];
+          this.isLoading = false;
+          
+          if (this.courses.length === 0) {
+            this.errorMessage = 'No courses assigned to you. Please contact admin.';
+          }
+        },
+        error: (err) => {
+          console.error('Error loading courses:', err);
+          this.errorMessage = 'Failed to load courses. Please try again.';
+          this.isLoading = false;
+        }
+      });
+    } catch (e) {
+      console.error('Error parsing user details:', e);
+      this.errorMessage = 'Error loading user information. Please login again.';
+    }
+  }
+
+  loadCourseStudents(courseId: number): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    
+    this.courseService.getCourseStudents(courseId).subscribe({
+      next: (students) => {
+        this.students = students;
+        this.initializeMarksArray();
+        this.isLoading = false;
+        
+        if (this.students.length === 0) {
+          this.errorMessage = 'No students enrolled in this course.';
+        }
+      },
+      error: (err) => {
+        console.error('Error loading students:', err);
+        this.errorMessage = 'Failed to load students. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  initializeMarksArray(): void {
     const marksArray = this.form.get('marks') as FormArray;
-    this.students.forEach(s => {
+    marksArray.clear();
+    
+    this.students.forEach(student => {
       marksArray.push(this.fb.group({
-        studentId: [s.id],
-        name: [s.name],
-        regNo: [s.regNo || ''],
+        studentId: [student.id],
+        name: [student.name],
         mark: ['', [Validators.required, Validators.min(0), Validators.max(100)]]
       }));
     });
+  }
+
+  clearMarksArray(): void {
+    const marksArray = this.form.get('marks') as FormArray;
+    marksArray.clear();
   }
 
   get marks(): FormArray {
@@ -78,97 +149,84 @@ export class GradesComponent implements OnInit {
     return this.marks.controls as FormGroup[];
   }
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) {
-      return;
-    }
-    const file = input.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = (e.target?.result || '') as string;
-      this.parseCsvAndFill(text);
-    };
-    reader.readAsText(file);
-  }
-
-  parseCsvAndFill(csv: string) {
-    this.errorMessage = '';
-    const lines = csv.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-    if (lines.length === 0) {
-      this.errorMessage = 'CSV file is empty';
-      return;
-    }
-
-    const header = lines[0].split(',').map(h => h.trim().toLowerCase());
-    const hasId = header.includes('id') || header.includes('studentid') || header.includes('student_id');
-    const hasReg = header.includes('regno') || header.includes('reg_no');
-    const hasName = header.includes('name');
-    const hasMark = header.includes('mark') || header.includes('marks') || header.includes('score');
-
-    if (!hasMark || !(hasId || hasReg || hasName)) {
-      this.errorMessage = 'CSV must include a student identifier (id, regNo, or name) and a mark column';
-      return;
-    }
-
-    const idxId = header.findIndex(h => h === 'id' || h === 'studentid' || h === 'student_id');
-    const idxReg = header.findIndex(h => h === 'regno' || h === 'reg_no');
-    const idxName = header.findIndex(h => h === 'name');
-    const idxMark = header.findIndex(h => h === 'mark' || h === 'marks' || h === 'score');
-
-    const marksArray = this.marks;
-
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(',').map(c => c.trim());
-      const identifier = (idxId !== -1 ? cols[idxId] : idxReg !== -1 ? cols[idxReg] : cols[idxName] || '').toString();
-      const markRaw = cols[idxMark] || '';
-      const markVal = markRaw === '' ? '' : Number(markRaw);
-
-      // try find student by id, regNo, or name
-      const studentIndex = this.students.findIndex(s => {
-        if (idxId !== -1 && s.id != null) return s.id.toString() === identifier;
-        if (idxReg !== -1 && s.regNo) return s.regNo.toLowerCase() === identifier.toLowerCase();
-        if (idxName !== -1) return s.name.toLowerCase() === identifier.toLowerCase();
-        return false;
-      });
-
-      if (studentIndex === -1) {
-        // skip unknown student rows
-        continue;
-      }
-
-      const control = marksArray.at(studentIndex);
-      if (control) {
-        control.get('mark')?.setValue(isNaN(markVal as number) ? '' : markVal);
-      }
-    }
-
-    this.successMessage = 'CSV imported. Please review marks before submitting.';
-  }
-
-  submit() {
+  submit(): void {
     this.errorMessage = '';
     this.successMessage = '';
+    
     if (this.form.invalid) {
-      this.errorMessage = 'Please fill semester, subject and ensure all marks are valid (0-100).';
+      this.errorMessage = 'Please fill all required fields and ensure all marks are valid (0-100).';
       this.form.markAllAsTouched();
       return;
     }
 
+    if (!this.facultyId) {
+      this.errorMessage = 'Faculty ID not found. Please login again.';
+      return;
+    }
+
     const payload = {
-      semester: this.form.value.semester,
-      subject: this.form.value.subject,
-      marks: this.form.value.marks.map((m: any) => ({ studentId: m.studentId, mark: m.mark }))
+      course_id: this.form.value.course,
+      faculty_id: this.facultyId,
+      marks: this.form.value.marks.map((m: any) => ({ 
+        studentId: m.studentId, 
+        mark: m.mark 
+      }))
     };
 
-    console.log('Grade submission payload:', payload);
-    this.successMessage = 'Marks submitted (see console).';
+    this.isLoading = true;
+    
+    this.courseService.submitGrades(payload).subscribe({
+      next: (response) => {
+        this.successMessage = 'Marks submitted successfully!';
+        this.isLoading = false;
+        this.loadSubmittedGrades();
+        setTimeout(() => this.resetForm(), 2000);
+      },
+      error: (err) => {
+        console.error('Error submitting grades:', err);
+        this.errorMessage = err.error?.message || 'Failed to submit marks. Please try again.';
+        this.isLoading = false;
+      }
+    });
   }
 
-  resetForm() {
-    this.form.get('semester')?.reset('');
-    this.form.get('subject')?.reset('');
-    this.marks.controls.forEach((c, idx) => c.get('mark')?.reset(''));
+  loadSubmittedGrades(): void {
+    if (!this.facultyId) {
+      const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+      if (!userDetails) return;
+      
+      try {
+        const user = JSON.parse(userDetails);
+        this.facultyId = user?.id;
+      } catch (e) {
+        return;
+      }
+    }
+
+    if (!this.facultyId) return;
+
+    this.courseService.getFacultyGrades(this.facultyId).subscribe({
+      next: (grades) => {
+        this.submittedGrades = grades;
+      },
+      error: (err) => {
+        console.error('Error loading submitted grades:', err);
+      }
+    });
+  }
+
+  statusClass(status: string): string {
+    return status.toLowerCase();
+  }
+
+  toggleSubmittedGrades(): void {
+    this.showSubmittedGrades = !this.showSubmittedGrades;
+  }
+
+  resetForm(): void {
+    this.form.get('course')?.reset('');
+    this.clearMarksArray();
+    this.students = [];
     this.successMessage = '';
     this.errorMessage = '';
   }
