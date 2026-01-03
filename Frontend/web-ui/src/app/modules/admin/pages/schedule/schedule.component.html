@@ -59,17 +59,17 @@
                     <tr *ngFor="let schedule of schedules">
                         <td>
                             <div class="course-cell">
-                                <span class="course-name-text">{{ schedule.courseName }}</span>
-                                <span class="course-id">ID: {{ schedule.course_id }}</span>
+                                <span class="course-name-text">{{ schedule.course?.course_name || 'N/A' }}</span>
+                                <span class="course-id">Code: {{ schedule.course?.course_code || 'N/A' }}</span>
                             </div>
                         </td>
-                        <td>{{ schedule.facultyName }}</td>
+                        <td>{{ schedule.faculty?.name || 'N/A' }}</td>
                         <td>{{ schedule.class_date }}</td>
                         <td>
                             <span class="time-text">{{ schedule.start_time || '--:--' }} - {{ schedule.end_time ||
                                 '--:--' }}</span>
                             <span class="status-badge" style="margin-left:0.75rem; vertical-align:middle;"
-                                [ngClass]="{'active': schedule.status === 'active', 'inactive': schedule.status !== 'active'}">
+                                [ngClass]="{'active': schedule.status === 'scheduled', 'inactive': schedule.status !== 'scheduled'}">
                                 {{ schedule.status | titlecase }}
                             </span>
                         </td>
@@ -122,7 +122,7 @@
                 <label for="courseId">Course *</label>
                 <select id="courseId" formControlName="course_id" class="form-control">
                     <option value="">Select a course</option>
-                    <option *ngFor="let course of courses" [value]="course.id">{{ course.name }}</option>
+                    <option *ngFor="let course of courses" [value]="course.id">{{ course.course_name }} ({{ course.course_code }})</option>
                 </select>
             </div>
 

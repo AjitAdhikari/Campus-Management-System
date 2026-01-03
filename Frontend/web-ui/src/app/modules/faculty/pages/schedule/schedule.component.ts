@@ -1,20 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-
-// Interface for class schedule
-export interface ClassSchedule {
-  id: number;
-  courseId: number;
-  courseName: string;
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  room: string;
-  scheduleType: 'regular' | 'one-time' | 'lab' | 'tutorial';
-  isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { ClassSchedule, ScheduleService, UpdateScheduleRequest } from '../../../../services/schedule.service';
+import { UserService } from '../../../../services/user.service';
 
 @Component({
   selector: 'app-schedule',
@@ -23,6 +10,7 @@ export interface ClassSchedule {
 })
 export class ScheduleComponent implements OnInit {
   schedules: ClassSchedule[] = [];
+  currentUserId: string | number | null = null;
   
   // Form controls
   editForm!: FormGroup;
@@ -34,30 +22,35 @@ export class ScheduleComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
   
-  daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   scheduleTypes = [
-    { value: 'regular', label: 'Regular Class' },
-    { value: 'lab', label: 'Lab Session' },
-    { value: 'tutorial', label: 'Tutorial' }
+    { value: 'scheduled', label: 'Scheduled' },
+    { value: 'cancelled', label: 'Cancelled' },
+    { value: 'rescheduled', label: 'Rescheduled' }
   ];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private scheduleService: ScheduleService,
+    private userService: UserService
+  ) {
     this.initializeForm();
   }
 
   ngOnInit(): void {
+    this.currentUserId = this.userService.current?.id || null;
     this.loadSchedules();
   }
 
   initializeForm(): void {
     this.editForm = this.fb.group({
-      courseId: [{ value: '', disabled: true }, Validators.required],
-      courseName: [{ value: '', disabled: true }, Validators.required],
-      dayOfWeek: [{ value: '', disabled: true }, Validators.required],
-      startTime: [{ value: '', disabled: true }, Validators.required],
-      endTime: [{ value: '', disabled: true }, Validators.required],
-      scheduleType: ['regular', Validators.required],
-      isActive: [true]
+      id: [{ value: '', disabled: true }],
+      course_id: [{ value: '', disabled: true }, Validators.required],
+      courseName: [{ value: '', disabled: true }],
+      faculty_id: [{ value: '', disabled: true }, Validators.required],
+      class_date: ['', Validators.required],
+      start_time: ['', Validators.required],
+      end_time: ['', Validators.required],
+      status: ['scheduled', Validators.required]
     });
   }
 
@@ -65,64 +58,45 @@ export class ScheduleComponent implements OnInit {
     this.isLoading = true;
     this.clearMessages();
     
-    // Replace with actual API call
-    this.schedules = [
-      {
-        id: 1,
-        courseId: 101,
-        courseName: 'Advanced Data Structures',
-        dayOfWeek: 'Monday',
-        startTime: '09:00',
-        endTime: '10:30',
-        room: 'Room 101',
-        scheduleType: 'regular',
-        isActive: true,
-        createdAt: '2025-12-01',
-        updatedAt: '2025-12-20'
+    this.scheduleService.getSchedules().subscribe({
+      next: (data: ClassSchedule[]) => {
+        // Filter to show only schedules assigned to this faculty
+        if (this.currentUserId) {
+          // Handle both string and number comparison for faculty_id
+          this.schedules = data.filter(s => {
+            const schedFacultyId = String(s.faculty_id);
+            const currentId = String(this.currentUserId);
+            return schedFacultyId === currentId;
+          });
+          console.log('Current User ID:', this.currentUserId);
+          console.log('Filtered schedules for faculty:', this.schedules);
+        } else {
+          this.schedules = data;
+        }
+        this.isLoading = false;
       },
-      {
-        id: 2,
-        courseId: 102,
-        courseName: 'Web Development',
-        dayOfWeek: 'Wednesday',
-        startTime: '11:00',
-        endTime: '12:30',
-        room: 'Room 205',
-        scheduleType: 'regular',
-        isActive: true,
-        createdAt: '2025-12-01',
-        updatedAt: '2025-12-20'
-      },
-      {
-        id: 3,
-        courseId: 103,
-        courseName: 'Database Management',
-        dayOfWeek: 'Friday',
-        startTime: '14:00',
-        endTime: '15:30',
-        room: 'Lab 01',
-        scheduleType: 'lab',
-        isActive: true,
-        createdAt: '2025-12-01',
-        updatedAt: '2025-12-20'
+      error: (error: any) => {
+        console.error('Failed to load schedules', error);
+        this.errorMessage = 'Failed to load schedules. Please try again.';
+        this.schedules = [];
+        this.isLoading = false;
       }
-    ];
-    
-    this.isLoading = false;
+    });
   }
 
   openEditModal(schedule: ClassSchedule): void {
-    this.selectedSchedule = JSON.parse(JSON.stringify(schedule)); // Deep copy
+    this.selectedSchedule = JSON.parse(JSON.stringify(schedule));
     this.showEditModal = true;
     
     this.editForm.patchValue({
-      courseId: schedule.courseId,
-      courseName: schedule.courseName,
-      dayOfWeek: schedule.dayOfWeek,
-      startTime: schedule.startTime,
-      endTime: schedule.endTime,
-      scheduleType: schedule.scheduleType,
-      isActive: schedule.isActive
+      id: schedule.id,
+      course_id: schedule.course_id,
+      courseName: schedule.course?.course_name || '',
+      faculty_id: schedule.faculty_id,
+      class_date: schedule.class_date,
+      start_time: schedule.start_time,
+      end_time: schedule.end_time,
+      status: schedule.status
     });
   }
 
@@ -138,28 +112,31 @@ export class ScheduleComponent implements OnInit {
       return;
     }
 
-    const updatedData = {
-      scheduleType: this.editForm.get('scheduleType')?.value,
-      isActive: this.editForm.get('isActive')?.value
+    const formData = this.editForm.getRawValue();
+    const updateData: UpdateScheduleRequest = {
+      faculty_id: formData.faculty_id,
+      class_date: formData.class_date,
+      start_time: formData.start_time,
+      end_time: formData.end_time,
+      status: formData.status
     };
 
-    if (this.selectedSchedule.id) {
-      const index = this.schedules.findIndex(s => s.id === this.selectedSchedule!.id);
-      if (index !== -1) {
-        this.schedules[index] = {
-          ...this.schedules[index],
-          ...updatedData,
-          updatedAt: new Date().toISOString().split('T')[0]
-        };
+    this.scheduleService.updateSchedule(this.selectedSchedule.id, updateData).subscribe({
+      next: (response: any) => {
         this.successMessage = 'Schedule updated successfully!';
         this.closeEditModal();
+        this.loadSchedules();
         setTimeout(() => this.clearMessages(), 3000);
+      },
+      error: (error: any) => {
+        console.error('Failed to update schedule', error);
+        this.errorMessage = 'Failed to update schedule. Please try again.';
       }
-    }
+    });
   }
 
   getScheduleTypeLabel(type: string): string {
-    const scheduleType = this.scheduleTypes.find(st => st.value === type);
+    const scheduleType = this.scheduleTypes.find((st: any) => st.value === type);
     return scheduleType ? scheduleType.label : type;
   }
 
@@ -169,6 +146,7 @@ export class ScheduleComponent implements OnInit {
   }
 
   getScheduleDisplay(schedule: ClassSchedule): string {
-    return `${schedule.courseName} - ${schedule.dayOfWeek} ${schedule.startTime}-${schedule.endTime}`;
+    const courseName = schedule.course?.course_name || 'Unknown Course';
+    return `${courseName} - ${schedule.class_date} ${schedule.start_time}-${schedule.end_time}`;
   }
 }

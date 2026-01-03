@@ -130,3 +130,18 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+.modal {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal.show {
+    opacity: 1;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}

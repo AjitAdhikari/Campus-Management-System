@@ -70,3 +70,35 @@
 		</aside>
 	</main>
 </div>
+
+
+<div class="modal fade" [class.show]="showClockInModal" [style.display]="showClockInModal ? 'block' : 'none'" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Welcome, {{ facultyName }}!</h5>
+				<button type="button" class="btn-close" (click)="closeModal()" [disabled]="clockingIn"></button>
+			</div>
+			<div class="modal-body text-center py-4">
+				<div class="mb-3">
+					<svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<circle cx="12" cy="12" r="10" stroke="#4f46e5" stroke-width="2"/>
+						<path d="M12 6v6l4 2" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>
+					</svg>
+				</div>
+				<p class="mb-2">Please clock in to mark your attendance for today.</p>
+				<p class="text-muted small">{{ currentDate | date:'fullDate' }} - {{ currentDate | date:'shortTime' }}</p>
+			</div>
+			<div class="modal-footer justify-content-center">
+				<button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="clockingIn">
+					Later
+				</button>
+				<button type="button" class="btn btn-primary" (click)="clockIn()" [disabled]="clockingIn">
+					<span *ngIf="clockingIn" class="spinner-border spinner-border-sm me-2"></span>
+					Clock In Now
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showClockInModal" *ngIf="showClockInModal"></div>

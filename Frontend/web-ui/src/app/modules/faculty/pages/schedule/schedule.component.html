@@ -32,8 +32,8 @@
         <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5" />
         <path d="M7 9h10M7 13h10M7 17h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
       </svg>
-      <h3>No schedules available</h3>
-      <p>Your class schedules will appear here</p>
+      <h3>No schedules assigned</h3>
+      <p>You don't have any class schedules assigned yet. Please contact admin.</p>
     </div>
 
     <div *ngIf="schedules.length > 0" class="table-container">
@@ -41,10 +41,8 @@
         <thead>
           <tr>
             <th>Course</th>
-            <th>Day</th>
+            <th>Class Date</th>
             <th>Time</th>
-            <th>Room</th>
-            <th>Type</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -53,23 +51,18 @@
           <tr *ngFor="let schedule of schedules">
             <td>
               <div class="course-cell">
-                <span class="course-name-text">{{ schedule.courseName }}</span>
-                <span class="course-id">ID: {{ schedule.courseId }}</span>
+                <span class="course-name-text">{{ schedule.course?.course_name || 'N/A' }}</span>
+                <span class="course-id">Code: {{ schedule.course?.course_code || 'N/A' }}</span>
               </div>
             </td>
-            <td>{{ schedule.dayOfWeek }}</td>
+            <td>{{ schedule.class_date }}</td>
             <td>
-              <span class="time-text">{{ schedule.startTime }} - {{ schedule.endTime }}</span>
-            </td>
-            <td>{{ schedule.room }}</td>
-            <td>
-              <span class="type-badge" [ngClass]="'type-' + schedule.scheduleType">
-                {{ getScheduleTypeLabel(schedule.scheduleType) }}
-              </span>
+              <span class="time-text">{{ schedule.start_time || '--:--' }} - {{ schedule.end_time || '--:--' }}</span>
             </td>
             <td>
-              <span class="status-badge" [class.active]="schedule.isActive" [class.inactive]="!schedule.isActive">
-                {{ schedule.isActive ? 'Active' : 'Inactive' }}
+              <span class="status-badge" 
+                [ngClass]="{'active': schedule.status === 'scheduled', 'inactive': schedule.status !== 'scheduled'}">
+                {{ schedule.status | titlecase }}
               </span>
             </td>
             <td>
@@ -102,51 +95,37 @@
 
     <form [formGroup]="editForm" class="modal-form">
       <div class="form-group">
-        <label for="courseId">Course ID</label>
-        <input type="number" id="courseId" formControlName="courseId" class="form-control" readonly />
-      </div>
-
-      <div class="form-group">
         <label for="courseName">Course Name</label>
         <input type="text" id="courseName" formControlName="courseName" class="form-control" readonly />
       </div>
 
       <div class="form-group">
-        <label for="dayOfWeek">Day of Week</label>
-        <input type="text" id="dayOfWeek" formControlName="dayOfWeek" class="form-control" readonly />
+        <label for="classDate">Class Date *</label>
+        <input type="date" id="classDate" formControlName="class_date" class="form-control" />
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="startTime">Start Time</label>
-          <input type="time" id="startTime" formControlName="startTime" class="form-control" readonly />
+          <label for="startTime">Start Time *</label>
+          <input type="time" id="startTime" formControlName="start_time" class="form-control" />
         </div>
         <div class="form-group">
-          <label for="endTime">End Time</label>
-          <input type="time" id="endTime" formControlName="endTime" class="form-control" readonly />
+          <label for="endTime">End Time *</label>
+          <input type="time" id="endTime" formControlName="end_time" class="form-control" />
         </div>
       </div>
 
       <div class="form-group">
-        <label for="scheduleType">Schedule Type *</label>
-        <select id="scheduleType" formControlName="scheduleType" class="form-control">
-          <option value="regular">Regular Class</option>
-          <option value="lab">Lab Session</option>
-          <option value="tutorial">Tutorial</option>
+        <label for="status">Status *</label>
+        <select id="status" formControlName="status" class="form-control">
+          <option *ngFor="let type of scheduleTypes" [value]="type.value">{{ type.label }}</option>
         </select>
-      </div>
-
-      <div class="form-group checkbox">
-        <label for="isActive">
-          <input type="checkbox" id="isActive" formControlName="isActive" />
-          <span>Active Schedule</span>
-        </label>
       </div>
     </form>
 
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="updateSchedule()">Update Schedule</button>
+      <button class="btn btn-primary" (click)="updateSchedule()" [disabled]="editForm.invalid">Update Schedule</button>
     </div>
   </div>
 </div>
