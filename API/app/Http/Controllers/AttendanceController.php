@@ -14,7 +14,9 @@ class AttendanceController extends Controller
     public function index()
     {
         try {
-            $attendance = Attendance::orderBy('created_at', 'desc')->get();
+            $attendance = Attendance::with('faculty:id,name')
+                ->orderBy('created_at', 'desc')
+                ->get();
             
             return response()->json([
                 'success' => true,
@@ -34,7 +36,8 @@ class AttendanceController extends Controller
     public function show($facultyId)
     {
         try {
-            $attendance = Attendance::where('faculty_id', $facultyId)
+            $attendance = Attendance::with('faculty:id,name')
+                ->where('faculty_id', $facultyId)
                 ->orderBy('created_at', 'desc')
                 ->get();
             

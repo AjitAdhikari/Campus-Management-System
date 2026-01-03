@@ -10,7 +10,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\ClassScheduleController;
 use App\Http\Controllers\ExamResultController;
 use App\Http\Controllers\ExamController;
-use App\Http\Controllers\FacultyAttendanceController;
+use App\Http\Controllers\AttendanceController;
 
 
 
@@ -79,10 +79,10 @@ Route::prefix('notices')->group(function () {
         Route::post('/submissions/{submissionId}/feedback', [AssignmentController::class, 'updateSubmissionFeedback']); // Faculty feedback
     });
     
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('assignment-submissions', [AssignmentSubmissionController::class, 'store']);
-        Route::put('assignment-submissions/{assignmentSubmission}', [AssignmentSubmissionController::class, 'update']);
-    });
+    // Route::middleware('auth:sanctum')->group(function () {
+    //     Route::post('assignment-submissions', [AssignmentSubmissionController::class, 'store']);
+    //     Route::put('assignment-submissions/{assignmentSubmission}', [AssignmentSubmissionController::class, 'update']);
+    // });
 
     // Exams & Results
     Route::apiResource('exams', ExamController::class)->only(['index','store']);
@@ -93,10 +93,13 @@ Route::prefix('notices')->group(function () {
        // Departments
     Route::apiResource('departments', DepartmentController::class);
 
-    Route::post(
-        'faculty/attendance',
-        [FacultyAttendanceController::class, 'store']
-    );
+    // Attendance
+    Route::prefix('attendance')->group(function () {
+        Route::get('/', [AttendanceController::class, 'index']); // Get all attendance
+        Route::post('/', [AttendanceController::class, 'store']); // Clock in
+        Route::get('/{facultyId}', [AttendanceController::class, 'show']); // Get faculty attendance
+        Route::delete('/{facultyId}', [AttendanceController::class, 'destroy']); // Clear faculty attendance
+    });
 
      Route::get(
         'faculty/attendance',

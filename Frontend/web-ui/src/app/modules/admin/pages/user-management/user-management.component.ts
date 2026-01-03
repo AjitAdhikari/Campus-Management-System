@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Assignment, AssignmentService } from '../../../../services/assignment.service';
+import { AttendanceRecord, AttendanceService } from '../../../../services/attendance.service';
 import { Course, CourseService } from '../../../../services/course.service';
 import { User, UserService } from '../../../../services/user.service';
 
@@ -22,7 +24,20 @@ export class UserManagementComponent implements OnInit {
   loading = false;
   errorMessage = '';
 
-  constructor(private courseService: CourseService, private userService: UserService) { }
+  // For viewing faculty data
+  showAttendanceModal = false;
+  showAssignmentsModal = false;
+  selectedFacultyAttendance: AttendanceRecord[] = [];
+  selectedFacultyAssignments: Assignment[] = [];
+  selectedFacultyName = '';
+  loadingFacultyData = false;
+
+  constructor(
+    private courseService: CourseService, 
+    private userService: UserService,
+    private assignmentService: AssignmentService,
+    private attendanceService: AttendanceService
+  ) { }
 
   ngOnInit(): void {
     this.courseService.getCourses().subscribe({
@@ -230,5 +245,61 @@ export class UserManagementComponent implements OnInit {
     const i = t.roles.indexOf(role);
     if (i === -1) t.roles.push(role);
     else t.roles.splice(i, 1);
+  }
+
+  viewAttendance(faculty: User): void {
+    this.selectedFacultyName = faculty.name;
+    this.loadingFacultyData = true;
+    this.showAttendanceModal = true;
+    this.selectedFacultyAttendance = [];
+
+    this.attendanceService.getAttendance(faculty.id).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.selectedFacultyAttendance = Array.isArray(response.data) ? response.data : [];
+        }
+        this.loadingFacultyData = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading attendance:', error);
+        this.loadingFacultyData = false;
+      }
+    });
+  }
+
+  viewAssignments(faculty: User): void {
+    this.selectedFacultyName = faculty.name;
+    this.loadingFacultyData = true;
+    this.showAssignmentsModal = true;
+    this.selectedFacultyAssignments = [];
+
+    // Note: This requires the backend to support fetching assignments by faculty ID
+    // For now, we'll use a workaround by filtering all assignments
+    this.assignmentService.getFacultyAssignments().subscribe({
+      next: (response) => {
+        if (response.success) {
+          const assignments = Array.isArray(response.data) ? response.data : [response.data];
+          // Filter by faculty ID if needed
+          this.selectedFacultyAssignments = assignments.filter((a: Assignment) => a.faculty_id === faculty.id);
+        }
+        this.loadingFacultyData = false;
+      },
+      error: (error) => {
+        console.error('Error loading assignments:', error);
+        this.loadingFacultyData = false;
+      }
+    });
+  }
+
+  closeAttendanceModal(): void {
+    this.showAttendanceModal = false;
+    this.selectedFacultyAttendance = [];
+    this.selectedFacultyName = '';
+  }
+
+  closeAssignmentsModal(): void {
+    this.showAssignmentsModal = false;
+    this.selectedFacultyAssignments = [];
+    this.selectedFacultyName = '';
   }
 }
