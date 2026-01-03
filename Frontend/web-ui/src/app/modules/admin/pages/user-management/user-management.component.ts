@@ -182,9 +182,15 @@ export class UserManagementComponent implements OnInit {
 
       this.userService.update(t.id, payload).subscribe({
           next: () => {
-          this.loading = false;
-          this.closeForm();
-          this.loadUsers();
+          if (role === 'Faculty' && t.subjects && t.id) {
+            this.assignCourseToFaculty(t.id, t.subjects);
+          } else if (role === 'Student' && (t as any).semester && t.id) {
+            this.assignCoursesToStudent(t.id, (t as any).semester);
+          } else {
+            this.loading = false;
+            this.closeForm();
+            this.loadUsers();
+          }
         },
           error: (err: any) => {
             console.error('Failed to update user', err);
@@ -202,10 +208,16 @@ export class UserManagementComponent implements OnInit {
       };
 
       this.userService.create(payload).subscribe({
-          next: () => {
-          this.loading = false;
-          this.closeForm();
-          this.loadUsers();
+          next: (createdUser: User) => {
+          if (role === 'Faculty' && t.subjects && createdUser.id) {
+            this.assignCourseToFaculty(createdUser.id, t.subjects);
+          } else if (role === 'Student' && (t as any).semester && createdUser.id) {
+            this.assignCoursesToStudent(createdUser.id, (t as any).semester);
+          } else {
+            this.loading = false;
+            this.closeForm();
+            this.loadUsers();
+          }
         },
           error: (err: any) => {
             console.error('Failed to create user', err);
@@ -220,6 +232,51 @@ export class UserManagementComponent implements OnInit {
     if (!email) return false;
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
+  }
+
+  private assignCourseToFaculty(facultyId: string | number, courseName: string): void {
+    const course = this.courses.find(c => c.course_name === courseName);
+    if (!course) {
+      console.error('Course not found:', courseName);
+      this.loading = false;
+      this.closeForm();
+      this.loadUsers();
+      return;
+    }
+
+    this.courseService.assignCourseToFaculty(facultyId, course.id).subscribe({
+      next: (response) => {
+        console.log('Course assigned successfully:', response);
+        this.loading = false;
+        this.closeForm();
+        this.loadUsers();
+      },
+      error: (err: any) => {
+        console.error('Failed to assign course to faculty', err);
+        alert('User saved but failed to assign course.');
+        this.loading = false;
+        this.closeForm();
+        this.loadUsers();
+      }
+    });
+  }
+
+  private assignCoursesToStudent(studentId: string | number, semester: number): void {
+    this.courseService.assignCoursesToStudent(studentId, semester).subscribe({
+      next: (response) => {
+        console.log('Courses assigned successfully:', response);
+        this.loading = false;
+        this.closeForm();
+        this.loadUsers();
+      },
+      error: (err: any) => {
+        console.error('Failed to assign courses to student', err);
+        alert('User saved but failed to assign courses.');
+        this.loading = false;
+        this.closeForm();
+        this.loadUsers();
+      }
+    });
   }
 
   deleteUser(id?: number | string): void {
