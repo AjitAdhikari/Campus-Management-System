@@ -1,8 +1,7 @@
 <div class="schedule-container">
     <div class="schedule-header">
         <div class="header-content">
-            <h1 class="page-title">Schedule Management</h1>
-            <p class="page-subtitle">Manage class schedules for all courses and faculties</p>
+            <h2 class="page-title">Schedule Management</h2>
         </div>
         <button class="btn btn-primary" (click)="openAddModal()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -176,20 +175,10 @@
         </div>
 
         <div class="modal-info">
-            <strong>Note:</strong> Course selection is locked. You can modify other details.
+            Editing schedule for: <strong>{{ selectedSchedule.course?.course_name }} ({{ selectedSchedule.course?.course_code }})</strong>
         </div>
 
         <form [formGroup]="editForm" class="modal-form">
-            <div class="form-group">
-                <label for="courseIdEdit">Course ID</label>
-                <input type="number" id="courseIdEdit" formControlName="course_id" class="form-control" readonly />
-            </div>
-
-            <div class="form-group">
-                <label for="courseNameEdit">Course Name</label>
-                <input type="text" id="courseNameEdit" formControlName="courseName" class="form-control" readonly />
-            </div>
-
             <div class="form-group">
                 <label for="facultyIdEdit">Faculty *</label>
                 <select id="facultyIdEdit" formControlName="faculty_id" class="form-control">

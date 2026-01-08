@@ -27,6 +27,7 @@ export class ScheduleComponent implements OnInit {
   // Data for dropdowns
   courses: Course[] = [];
   faculties: User[] = [];
+  courseFacultyMap: Map<number, string> = new Map();
 
   constructor(
     private fb: FormBuilder,
@@ -41,6 +42,7 @@ export class ScheduleComponent implements OnInit {
     this.loadSchedules();
     this.loadCourses();
     this.loadFaculties();
+    this.loadCourseFacultyAssignments();
   }
 
   initializeForms(): void {
@@ -54,11 +56,8 @@ export class ScheduleComponent implements OnInit {
     });
 
     this.editForm = this.fb.group({
-      id: [{ value: '', disabled: true }],
       course_id: [{ value: '', disabled: true }, Validators.required],
-      courseName: [{ value: '', disabled: true }],
       faculty_id: ['', Validators.required],
-      facultyName: [{ value: '', disabled: true }],
       class_date: ['', Validators.required],
       start_time: ['', Validators.required],
       end_time: ['', Validators.required],
@@ -109,9 +108,48 @@ export class ScheduleComponent implements OnInit {
     });
   }
 
+  loadCourseFacultyAssignments(): void {
+    this.userService.list().subscribe({
+      next: (users: User[]) => {
+        const faculties = users.filter((user: User) => 
+          user.roles.includes('Faculty') || user.roles.includes('faculty')
+        );
+        
+        // For each faculty, get their assigned courses
+        faculties.forEach(faculty => {
+          this.courseService.getFacultyCourses(faculty.id).subscribe({
+            next: (courses: Course[]) => {
+              courses.forEach(course => {
+                this.courseFacultyMap.set(course.id, String(faculty.id));
+              });
+            },
+            error: (error) => {
+              console.error('Failed to load faculty courses', error);
+            }
+          });
+        });
+      },
+      error: (error) => {
+        console.error('Failed to load faculties for mapping', error);
+      }
+    });
+  }
+
   openAddModal(): void {
     this.showAddModal = true;
     this.scheduleForm.reset({ isActive: true });
+    this.setupCourseChangeListener();
+  }
+
+  setupCourseChangeListener(): void {
+    this.scheduleForm.get('course_id')?.valueChanges.subscribe((courseId) => {
+      if (courseId) {
+        const facultyId = this.courseFacultyMap.get(Number(courseId));
+        if (facultyId) {
+          this.scheduleForm.patchValue({ faculty_id: facultyId });
+        }
+      }
+    });
   }
 
   closeAddModal(): void {
@@ -120,20 +158,19 @@ export class ScheduleComponent implements OnInit {
   }
 
   openEditModal(schedule: ClassSchedule): void {
-    this.selectedSchedule = JSON.parse(JSON.stringify(schedule)); // Deep copy
+    this.selectedSchedule = schedule;
     this.showEditModal = true;
     
     this.editForm.patchValue({
-      id: schedule.id,
       course_id: schedule.course_id,
-      courseName: schedule.course?.course_name || '',
       faculty_id: schedule.faculty_id,
-      facultyName: schedule.faculty?.name || '',
       class_date: schedule.class_date,
       start_time: schedule.start_time,
       end_time: schedule.end_time,
       isActive: schedule.status === 'scheduled'
     });
+    
+    // Note: Course is locked in edit mode, so no need for change listener
   }
 
   closeEditModal(): void {

@@ -1,8 +1,8 @@
 <div class="dashboard-root">
 	<main class="dashboard-grid">
-		<section class="panel my-courses" *ngIf="courses.length > 0">
+		<section class="panel my-courses">
 			<h3 class="panel-title">My Assigned Courses</h3>
-			<div class="courses-grid">
+			<div class="courses-grid" *ngIf="courses.length > 0">
 				<div *ngFor="let course of courses" class="course-card" (click)="openSyllabus(course)">
 					<div class="course-icon">
 						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -21,6 +21,9 @@
 					</div>
 				</div>
 			</div>
+			<p class="muted small" *ngIf="courses.length === 0" style="padding: 20px 0; text-align: center; color: #6b7280;">
+				No courses assigned yet. Please contact the administrator to assign courses to your account.
+			</p>
 		</section>
 
 		<section class="panel upcoming-schedule">
