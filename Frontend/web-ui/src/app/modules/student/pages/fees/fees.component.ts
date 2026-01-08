@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import StorageHelper from 'src/app/helpers/StorageHelper';
 import { FeeService } from 'src/app/services/fee.service';
 
 @Component({
@@ -7,114 +8,133 @@ import { FeeService } from 'src/app/services/fee.service';
   styleUrls: ['./fees.component.css']
 })
 export class FeesComponent implements OnInit {
-  pendingDues: number = 0;
-  lastPayment: { amount: number, date: string } | null = null;
-  totalPaidYear: number = 0;
   pendingFees: any[] = [];
-  isLoading: boolean = false;
-  // Pagination
-  pageSize: number = 10;
-  currentPage: number = 1;
+  walletBalance: number = 60000.00;
+  showWalletModal: boolean = false;
+  paymentAmount: number = 0;
+  userId: string = '';
+  isProcessingPayment: boolean = false; // Prevent duplicate submissions
 
   constructor(private feeService: FeeService) { }
 
   ngOnInit(): void {
+    this.loadUserData();
     this.loadFeesData();
   }
 
+  loadUserData(): void {
+    const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+    if (userDetails) {
+      const user = JSON.parse(userDetails);
+      this.userId = user.id;
+      this.walletBalance = parseFloat(user.fees) || 60000.00;
+    }
+  }
+
   loadFeesData(): void {
-    this.isLoading = true;
-    // For the invoice-style view we populate mock invoice data here.
-    // In a real app this should come from `FeeService` or an API.
-    setTimeout(() => {
-      this.pendingFees = [
-        {
-          invoiceNumber: '644984994',
-          feeStatus: 'Partial Payment',
-          totalAmount: 336698,
-          amountPay: 74563,
-          balancedAmount: 262135,
-          invoiceDate: '2023-12-02 10:05:13'
-        },
-        {
-          invoiceNumber: '745002171',
-          feeStatus: 'Partial Payment',
-          totalAmount: 336698,
-          amountPay: 54756,
-          balancedAmount: 281942,
-          invoiceDate: '2023-12-02 10:05:40'
-        }
-      ];
-      this.pendingDues = this.pendingFees.reduce((s, inv) => s + (inv.balancedAmount || 0), 0);
-      this.isLoading = false;
-    }, 300);
+    if (!this.userId) return;
 
-    this.lastPayment = { amount: 500.00, date: 'Oct 2025' };
-    this.totalPaidYear = 3500.00;
+    this.feeService.getFees(this.userId).subscribe({
+      next: (response: any) => {
+        const fees = response.data || [];
+        
+        console.log('Loaded fees data:', fees); // Debug log
+        
+        this.pendingFees = fees.map((fee: any) => ({
+          semester: fee.semester,
+          feeStatus: fee.status || 'Pending',
+          totalAmount: parseFloat(fee.total_fee || 0),
+          amountPay: parseFloat(fee.amount_paid || 0),
+          balancedAmount: parseFloat(fee.due_amount || 0),
+          paidDate: fee.latest_payment_date
+        }));
+        
+        console.log('Processed pending fees:', this.pendingFees); // Debug log
+      },
+      error: () => {
+        this.pendingFees = [];
+      }
+    });
   }
 
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.pendingFees.length / this.pageSize));
-  }
-
-  get displayedFees(): any[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.pendingFees.slice(start, start + this.pageSize);
-  }
-
-  createRange(n: number): any[] {
-    return new Array(n);
-  }
-
-  viewInvoice(invoice: any): void {
-    // Replace with real navigation to invoice detail
-    console.log('View invoice', invoice);
-    alert('View invoice: ' + invoice.invoiceNumber);
-  }
-
-  viewAllInvoices(event: Event): void {
-    event.preventDefault();
-    console.log('View all invoices');
-    alert('Redirect to invoice list (placeholder)');
-  }
-
-  goTo(action: 'first' | 'prev' | 'next' | 'last', event: Event): void {
-    event.preventDefault();
-    if (action === 'first') this.currentPage = 1;
-    else if (action === 'prev') this.currentPage = Math.max(1, this.currentPage - 1);
-    else if (action === 'next') this.currentPage = Math.min(this.totalPages, this.currentPage + 1);
-    else if (action === 'last') this.currentPage = this.totalPages;
-  }
-
-  changePage(page: number, event?: Event): void {
-    if (event) event.preventDefault();
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-  }
-
-  proceedToPayment(): void {
+  openWalletPayment(): void {
     if (!this.pendingFees || this.pendingFees.length === 0) {
-      alert('No invoices to process.');
+      alert('No fee records to process.');
       return;
     }
-    const count = this.displayedFees.length;
-    const ok = confirm(`Process payment for ${count} invoice(s) shown on this page?`);
-    if (!ok) return;
-
-    // UI-only: mark displayed invoices as paid
-    const start = (this.currentPage - 1) * this.pageSize;
-    for (let i = 0; i < this.displayedFees.length; i++) {
-      const idx = start + i;
-      const inv = this.pendingFees[idx];
-      if (inv) {
-        inv.feeStatus = 'Paid';
-        inv.amountPay = inv.totalAmount;
-        inv.balancedAmount = 0;
-      }
-    }
-    // Recalculate dues
-    this.pendingDues = this.pendingFees.reduce((s, inv) => s + (inv.balancedAmount || 0), 0);
-    alert(`Processed payment for ${count} invoice(s) (UI-only).`);
+    this.paymentAmount = this.pendingFees.reduce((sum, fee) => sum + (fee.balancedAmount || 0), 0);
+    this.showWalletModal = true;
   }
-  
+
+  closeWalletModal(): void {
+    this.showWalletModal = false;
+    this.paymentAmount = 0;
+  }
+
+  getTotalDue(): number {
+    return this.pendingFees.reduce((sum, fee) => sum + (fee.balancedAmount || 0), 0);
+  }
+
+  confirmPayment(): void {
+    if (this.isProcessingPayment) {
+      return; // Prevent double submission
+    }
+
+    if (this.paymentAmount <= 0) {
+      alert('Please enter a valid payment amount.');
+      return;
+    }
+
+    const totalDue = this.getTotalDue();
+
+    if (this.paymentAmount > totalDue) {
+      alert('Payment amount cannot exceed the due amount!');
+      return;
+    }
+
+    if (this.walletBalance < this.paymentAmount) {
+      alert('Insufficient wallet balance!');
+      return;
+    }
+
+    this.isProcessingPayment = true;
+    const previousBalance = this.walletBalance;
+    const paidAmount = this.paymentAmount; // Store payment amount before modal closes
+
+    const paymentData = {
+      user_id: this.userId,
+      semester: this.pendingFees[0]?.semester,
+      payment_date: new Date().toISOString().split('T')[0],
+      amount: this.paymentAmount
+    };
+
+    console.log('Sending payment data:', paymentData); // Debug log
+
+    this.feeService.createFeeDetail(paymentData).subscribe({
+      next: (response: any) => {
+        this.isProcessingPayment = false;
+        if (response.new_wallet_balance !== undefined) {
+          this.walletBalance = response.new_wallet_balance;
+          
+          // Update localStorage to persist wallet balance
+          const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+          if (userDetails) {
+            const user = JSON.parse(userDetails);
+            user.fees = this.walletBalance;
+            StorageHelper.setLocalStorageItem('_user_details', JSON.stringify(user));
+          }
+        }
+        this.closeWalletModal();
+        this.loadFeesData();
+      },
+      error: (error) => {
+        this.isProcessingPayment = false;
+        this.walletBalance = previousBalance;
+        console.error('Payment error:', error);
+        const errorMessage = error.error?.error || 'Payment failed to process. Please try again.';
+        alert(errorMessage);
+      }
+    });
+  }
+
 }

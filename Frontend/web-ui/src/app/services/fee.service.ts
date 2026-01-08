@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 
 export interface Fee {
   id: number;
-  user_id: number;
+  user_id: string;
   semester: string;
   total_fee: number;
   created_at?: string;
@@ -13,7 +13,7 @@ export interface Fee {
 
 export interface FeeDetail {
   id: number;
-  user_id: number;
+  user_id: string;
   semester: string;
   payment_date: string;
   amount: number;
@@ -37,13 +37,34 @@ export class FeeService {
   constructor(private http: HttpClient) { }
 
   // Get fees for a specific user
-  getFees(userId: number): Observable<Fee> {
-    return this.http.get<Fee>(`${this.apiUrl}/${userId}`);
+  getFees(userId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${userId}`);
   }
 
   // Get fee details for a specific user
-  getFeeDetails(userId: number): Observable<FeeDetail[]> {
-    return this.http.get<FeeDetail[]>(`${this.apiUrl}/details/${userId}`);
+  getFeeDetails(userId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/details/${userId}`);
+  }
+
+  // Create fee detail (payment)
+  createFeeDetail(data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/details`, data);
+  }
+
+  // Get payment history (for admin)
+  getPaymentHistory(name?: string, semester?: string): Observable<any> {
+    let params: any = {};
+    if (name) params.name = name;
+    if (semester) params.semester = semester;
+    return this.http.get<any>('http://localhost:8000/api/payment-history', { params });
+  }
+
+  // Get student fee summary (for admin)
+  getStudentFeeSummary(name?: string, semester?: string): Observable<any> {
+    let params: any = {};
+    if (name) params.name = name;
+    if (semester) params.semester = semester;
+    return this.http.get<any>('http://localhost:8000/api/student-fee-summary', { params });
   }
 
   // Get all fees
@@ -56,28 +77,23 @@ export class FeeService {
     return this.http.post(this.apiUrl, fee);
   }
 
-  // Create fee detail (payment)
-  createFeeDetail(feeDetail: Omit<FeeDetail, 'id'>): Observable<any> {
-    return this.http.post(`${this.apiUrl}/details`, feeDetail);
-  }
-
-  // Mock data for demonstration - replace with actual API calls
-  getMockPendingFees(): Observable<PendingFee[]> {
-    return of([
-      {
-        feeType: "Tuition Fee - Spring '26",
-        amount: 1000.00,
-        dueDate: "Jan 15, 2026",
-        status: "Pending"
-      },
-      {
-        feeType: "Library Fine",
-        amount: 50.00,
-        dueDate: "Immediate",
-        status: "Overdue"
-      }
-    ]);
-  }
+  // // Mock data for demonstration - replace with actual API calls
+  // getMockPendingFees(): Observable<PendingFee[]> {
+  //   return of([
+  //     {
+  //       feeType: "Tuition Fee - Spring '26",
+  //       amount: 1000.00,
+  //       dueDate: "Jan 15, 2026",
+  //       status: "Pending"
+  //     },
+  //     {
+  //       feeType: "Library Fine",
+  //       amount: 50.00,
+  //       dueDate: "Immediate",
+  //       status: "Overdue"
+  //     }
+  //   ]);
+  // }
 
   // Calculate total pending dues
   calculatePendingDues(fees: PendingFee[]): number {

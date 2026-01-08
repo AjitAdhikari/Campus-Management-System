@@ -4,99 +4,7 @@
   margin: 0 auto;
 }
 
-h1 {
-  font-size: 1.75rem;
-  color: #333;
-  margin-bottom: 1.5rem;
-}
-
-h2 {
-  font-size: 1.25rem;
-  color: #555;
-  margin: 2rem 0 1rem 0;
-}
-
-.summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.summary-item {
-  padding: 1.5rem;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-
-.summary-item label {
-  display: block;
-  font-size: 0.875rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.summary-item .amount {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.summary-item .amount.pending {
-  color: #dc2626;
-}
-
-.summary-item .amount small {
-  font-size: 0.875rem;
-  font-weight: normal;
-  color: #666;
-  margin-left: 0.5rem;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-thead {
-  background: #f5f5f5;
-}
-
-th {
-  padding: 0.75rem;
-  text-align: left;
-  font-weight: 600;
-  color: #555;
-  border-bottom: 2px solid #ddd;
-}
-
-td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #eee;
-}
-
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
-tbody tr:hover {
-  background: #fafafa;
-}
-
-td.urgent {
-  color: #dc2626;
-  font-weight: 600;
-}
-
 .invoice-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-bottom: 1rem;
 }
 
@@ -105,10 +13,14 @@ td.urgent {
   font-size: 1.25rem;
 }
 
-.view-all {
-  font-size: 0.9rem;
-  color: #6b7280;
-  text-decoration: none;
+/* Table Wrapper for Scrolling */
+.table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 600px;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .invoice-table {
@@ -123,6 +35,9 @@ td.urgent {
 
 .invoice-table thead {
   background: #fafafa;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .invoice-table th {
@@ -141,83 +56,279 @@ td.urgent {
   color: #374151;
 }
 
-.btn-view {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 0.45rem 0.85rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-view:hover {
-  background: #0ea46f;
-}
-
-.pagination {
-  margin-top: 0.6rem;
-}
-
-.pagination a {
-  color: #2563eb;
-  margin-right: 0.75rem;
-  font-size: 0.85rem;
-  text-decoration: none;
-}
-
 .no-data {
   text-align: center;
   padding: 1rem 0;
   color: #6b7280;
 }
 
-.status {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.status.pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status.overdue {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status.paid {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.payment-section {
-  margin-top: 2rem;
-  text-align: center;
-}
-
-.payment-section button {
+/* Proceed to Payment Button */
+.btn-proceed-payment {
   padding: 0.75rem 2rem;
-  font-size: 1rem;
-  color: white;
   background: #4f46e5;
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s;
 }
 
-.payment-section button:hover {
+.btn-proceed-payment:hover {
   background: #4338ca;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
-.payment-section p {
-  margin-top: 0.75rem;
+/* Wallet Modal Overlay */
+.wallet-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+/* Wallet Modal */
+.wallet-modal {
+  background: white;
+  border-radius: 16px;
+  width: 95%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Wallet Header */
+.wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.wallet-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #111827;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* Wallet Body */
+.wallet-body {
+  padding: 1.5rem;
+  max-height: calc(90vh - 80px);
+  overflow-y: auto;
+}
+
+/* Wallet Balance Display */
+.wallet-balance-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.balance-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.balance-amount {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Payment Input Section */
+.payment-input-section {
+  margin-bottom: 1.5rem;
+}
+
+.payment-input-section label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.amount-input-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.payment-amount-input {
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2.5rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.payment-amount-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Quick Amount Buttons */
+.quick-amount-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.quick-btn {
+  flex: 1;
+  padding: 0.625rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 0.875rem;
-  color: #666;
+  font-weight: 600;
+  color: #4f46e5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-btn:hover {
+  background: #e5e7eb;
+  border-color: #4f46e5;
+}
+
+/* Wallet Actions */
+.wallet-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-cancel,
+.btn-confirm-payment {
+  flex: 1;
+  padding: 0.875rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+.btn-confirm-payment {
+  background: #10b981;
+  color: white;
+}
+
+.btn-confirm-payment:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-confirm-payment:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Insufficient Warning */
+.insufficient-warning {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border-left: 4px solid #dc2626;
+  border-radius: 6px;
+  color: #991b1b;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.warning-icon {
+  font-size: 1.5rem;
+}
+
+.payment-section-centered {
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
+.warning-amber {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+  color: #78350f;
 }
 
 @media (max-width: 768px) {
@@ -225,15 +336,52 @@ td.urgent {
     padding: 1rem;
   }
 
-  .summary {
-    grid-template-columns: 1fr;
-  }
-
-  table {
+  .invoice-table {
     font-size: 0.875rem;
   }
 
-  th, td {
+  .invoice-table th,
+  .invoice-table td {
     padding: 0.5rem;
+  }
+
+  .wallet-modal {
+    width: 98%;
+    max-height: 95vh;
+    margin: 0.5rem;
+  }
+
+  .wallet-body {
+    padding: 1rem;
+  }
+
+  .balance-amount {
+    font-size: 1.75rem;
+  }
+
+  .wallet-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .wallet-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .wallet-actions {
+    flex-direction: column;
+    margin-top: 1rem;
+  }
+
+  .btn-cancel,
+  .btn-confirm-payment {
+    width: 100%;
+  }
+
+  .balance-label {
+    font-size: 0.85rem;
+  }
+
+  .payment-amount-input {
+    font-size: 1.1rem;
   }
 }

@@ -29,6 +29,35 @@
     padding: 8px;
     border-radius: 6px;
     border: 1px solid #e6eef8;
+    flex: 1;
+}
+
+.btn-search,
+.btn-clear {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-search {
+    background: #4f46e5;
+    color: white;
+}
+
+.btn-search:hover {
+    background: #4338ca;
+}
+
+.btn-clear {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-clear:hover {
+    background: #e5e7eb;
 }
 
 .students-table {
@@ -44,26 +73,4 @@
 .students-table td {
     padding: 14px;
     border-bottom: 1px solid #f1f5f9;
-}
-
-.pager {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: 12px;
-}
-.pager-btn, .pager-page {
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid #e6eef8;
-    background: #fff;
-    cursor: pointer;
-}
-.pager-page.active {
-    background: #e6f2ff;
-    border-color: #cfe6ff;
-}
-.pager-info {
-    margin-left: 12px;
-    color: #6b7280;
 }
