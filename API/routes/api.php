@@ -50,6 +50,12 @@ Route::prefix('fees')->group(function () {
     Route::get('/details/{user_id}', [FeeController::class, 'show_fee_details']);
     Route::get('/', [FeeController::class, 'index']);
 });
+
+//http://localhost:8000/api/payment-history
+Route::get('/payment-history', [FeeController::class, 'getPaymentHistory']);
+
+//http://localhost:8000/api/student-fee-summary
+Route::get('/student-fee-summary', [FeeController::class, 'getStudentFeeSummary']);
 //http://localhost:8000/api/notices
 Route::prefix('notices')->group(function () {
     Route::post('/', [NoticeController::class, 'create']);

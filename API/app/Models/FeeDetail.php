@@ -24,7 +24,12 @@ class FeeDetail extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function feeDetails() {
-        return $this->hasMany(FeeDetail::class, 'user_id');
+    /**
+     * Relationship: FeeDetail belongs to Fee (total fee record)
+     */
+    public function fee()
+    {
+        return $this->belongsTo(Fee::class, 'user_id', 'user_id')
+                    ->where('semester', $this->semester);
     }
 }

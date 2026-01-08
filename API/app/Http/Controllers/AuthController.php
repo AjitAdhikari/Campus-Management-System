@@ -22,7 +22,10 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
         $user_profile = UserProfile::where('user_id', $user->id)->first();
 
-        $user->role = $user_profile->role;
+        $user->role = $user_profile->role ?? 'student';
+        $user->semesters = $user_profile->semesters ?? null;
+        $user->fees = $user_profile->fees ?? null;
+        $user->department = $user_profile->department ?? null;
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([

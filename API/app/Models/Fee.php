@@ -15,7 +15,7 @@ class Fee extends Model
         'updated_by'
     ];
 
-     /**
+    /**
      * Relationship: Fee belongs to User
      */
     public function user()
@@ -23,5 +23,12 @@ class Fee extends Model
         return $this->belongsTo(User::class);
     }
 
-   
+    /**
+     * Relationship: Fee has many FeeDetails (payments)
+     */
+    public function feeDetails()
+    {
+        return $this->hasMany(FeeDetail::class, 'user_id', 'user_id')
+                    ->where('semester', $this->semester);
+    }
 }
