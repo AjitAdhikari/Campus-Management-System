@@ -8,14 +8,12 @@ use App\Models\AssignmentSubmission;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class AssignmentController extends Controller
 {
-    /**
-     * Get all assignments for faculty
-     */
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -31,9 +29,6 @@ class AssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Get assignments for students
-     */
     public function studentAssignments(Request $request)
     {
         try {
@@ -46,7 +41,6 @@ class AssignmentController extends Controller
                 ], 401);
             }
             
-            // Load user profile to get student's semester and department
             $user->load('profile');
             
             if (!$user->profile) {
@@ -57,19 +51,15 @@ class AssignmentController extends Controller
                 ]);
             }
             
-            // Get student's semester and department
             $studentSemester = $user->profile->semesters;
             $studentDepartment = $user->profile->department;
             
-            // Build query to get courses
             $courseQuery = Course::query();
             
             $hasFilter = false;
             
-            // Match by semester if available
             if ($studentSemester) {
                 $hasFilter = true;
-                // Handle both numeric and string semester values
                 $semesterValue = is_numeric($studentSemester) ? (int)$studentSemester : $studentSemester;
                 $courseQuery->where(function($q) use ($semesterValue, $studentSemester) {
                     $q->where('semester', $semesterValue)
@@ -77,7 +67,6 @@ class AssignmentController extends Controller
                 });
             }
             
-            // Additionally filter by department if available
             if ($studentDepartment) {
                 if ($hasFilter) {
                     $courseQuery->where('department', $studentDepartment);
@@ -87,10 +76,8 @@ class AssignmentController extends Controller
                 }
             }
             
-            // If no filters, get all courses (fallback)
             $courseIds = $courseQuery->pluck('id')->toArray();
             
-            // If no courses found, return empty array
             if (empty($courseIds)) {
                 return response()->json([
                     'success' => true,
@@ -99,7 +86,6 @@ class AssignmentController extends Controller
                 ]);
             }
             
-            // Get assignments for courses in the student's semester
             $assignments = Assignment::with(['course', 'faculty.profile'])
                 ->whereIn('course_id', $courseIds)
                 ->orderBy('due_date', 'desc')
@@ -127,9 +113,6 @@ class AssignmentController extends Controller
         }
     }
 
-    /**
-     * Create a new assignment
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -168,6 +151,9 @@ class AssignmentController extends Controller
 
         $assignment->load(['course', 'submissions']);
 
+        // Send email notification to students enrolled in the course
+        $this->sendNewAssignmentNotificationToStudents($assignment);
+
         return response()->json([
             'success' => true,
             'message' => 'Assignment created successfully',
@@ -175,9 +161,6 @@ class AssignmentController extends Controller
         ], 201);
     }
 
-    /**
-     * Get a single assignment with submissions
-     */
     public function show($id)
     {
         $assignment = Assignment::with(['course', 'submissions.student.profile'])
@@ -189,9 +172,6 @@ class AssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Update assignment
-     */
     public function update(Request $request, $id)
     {
         $assignment = Assignment::findOrFail($id);
@@ -204,7 +184,6 @@ class AssignmentController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            // Delete old file if exists
             if ($assignment->attachment) {
                 Storage::disk('public')->delete($assignment->attachment);
             }
@@ -224,19 +203,14 @@ class AssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Delete assignment
-     */
     public function destroy($id)
     {
         $assignment = Assignment::findOrFail($id);
         
-        // Delete attachment file if exists
         if ($assignment->attachment) {
             Storage::disk('public')->delete($assignment->attachment);
         }
 
-        // Delete all submission files
         foreach ($assignment->submissions as $submission) {
             if ($submission->file) {
                 Storage::disk('public')->delete($submission->file);
@@ -251,9 +225,6 @@ class AssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Submit assignment (student)
-     */
     public function submitAssignment(Request $request, $assignmentId)
     {
         $validated = $request->validate([
@@ -263,7 +234,7 @@ class AssignmentController extends Controller
         $user = Auth::user();
         $assignment = Assignment::findOrFail($assignmentId);
 
-        // Check if already submitted
+       
         $existingSubmission = AssignmentSubmission::where('assignment_id', $assignmentId)
             ->where('student_id', $user->id)
             ->first();
@@ -286,6 +257,9 @@ class AssignmentController extends Controller
             'submitted_at' => now()
         ]);
 
+       
+        $this->sendSubmissionNotificationEmail($assignment, $user);
+
         return response()->json([
             'success' => true,
             'message' => 'Assignment submitted successfully',
@@ -293,9 +267,6 @@ class AssignmentController extends Controller
         ], 201);
     }
 
-    /**
-     * Update submission feedback (faculty)
-     */
     public function updateSubmissionFeedback(Request $request, $submissionId)
     {
         $validated = $request->validate([
@@ -313,9 +284,6 @@ class AssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Get submissions for an assignment
-     */
     public function getSubmissions($assignmentId)
     {
         $assignment = Assignment::findOrFail($assignmentId);
@@ -328,5 +296,223 @@ class AssignmentController extends Controller
             'success' => true,
             'data' => $submissions
         ]);
+    }
+
+    private function sendSubmissionNotificationEmail($assignment, $student)
+    {
+        try {
+            $faculty = $assignment->faculty;
+            
+            if (!$faculty || !$faculty->email) {
+                \Log::warning('Faculty email not found for assignment submission notification');
+                return;
+            }
+
+            $studentName = $student->name;
+            if ($student->profile) {
+                $studentName = trim(($student->profile->first_name ?? '') . ' ' . ($student->profile->last_name ?? ''));
+                if (empty($studentName)) {
+                    $studentName = $student->name;
+                }
+            }
+
+            $emailData = [
+                'facultyName' => $faculty->name,
+                'studentName' => $studentName,
+                'assignmentTitle' => $assignment->title,
+                'courseName' => $assignment->course->course_name ?? 'N/A',
+                'submittedAt' => now()->format('F d, Y h:i A'),
+            ];
+
+            Mail::send([], [], function ($message) use ($faculty, $emailData) {
+                $message->to($faculty->email)
+                    ->subject('New Assignment Submission - ' . $emailData['assignmentTitle'])
+                    ->html($this->getSubmissionNotificationEmailTemplate($emailData));
+            });
+
+            \Log::info('Assignment submission notification sent to faculty: ' . $faculty->email);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send assignment submission notification: ' . $e->getMessage());
+        }
+    }
+
+    private function getSubmissionNotificationEmailTemplate($data)
+    {
+        return '
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .info-box { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
+                    .info-row { margin: 10px 0; }
+                    .label { font-weight: bold; color: #4a5568; }
+                    .value { color: #2d3748; }
+                    .footer { text-align: center; margin-top: 20px; color: #718096; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1 style="margin: 0;">📝 New Assignment Submission</h1>
+                    </div>
+                    <div class="content">
+                        <p>Dear ' . htmlspecialchars($data['facultyName']) . ',</p>
+                        <p>A student has submitted an assignment.</p>
+                        
+                        <div class="info-box">
+                            <div class="info-row">
+                                <span class="label">Student Name:</span>
+                                <span class="value">' . htmlspecialchars($data['studentName']) . '</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Assignment:</span>
+                                <span class="value">' . htmlspecialchars($data['assignmentTitle']) . '</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Course:</span>
+                                <span class="value">' . htmlspecialchars($data['courseName']) . '</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Submitted At:</span>
+                                <span class="value">' . htmlspecialchars($data['submittedAt']) . '</span>
+                            </div>
+                        </div>
+                        
+                        <p>Please log in to the system to review the submission and provide feedback.</p>
+                        
+                    </div>
+                </div>
+            </body>
+            </html>
+        ';
+    }
+
+    private function sendNewAssignmentNotificationToStudents($assignment)
+    {
+        try {
+            $course = $assignment->course;
+            
+            if (!$course) {
+                \Log::warning('Course not found for new assignment notification');
+                return;
+            }
+
+            $students = \App\Models\User::with('profile')
+                ->whereHas('profile', function($query) use ($course) {
+                    $query->where('role', 'student')
+                          ->where('semesters', $course->semester)
+                          ->where('department', $course->department);
+                })
+                ->get();
+
+            if ($students->isEmpty()) {
+                \Log::info('No students found for course: ' . $course->course_name);
+                return;
+            }
+
+            $facultyName = $assignment->faculty->name ?? 'Your Instructor';
+            $dueDate = \Carbon\Carbon::parse($assignment->due_date)->format('F d, Y');
+
+            foreach ($students as $student) {
+                if (!$student->email) {
+                    continue;
+                }
+
+                $studentName = $student->name;
+                if ($student->profile) {
+                    $studentName = trim(($student->profile->first_name ?? '') . ' ' . ($student->profile->last_name ?? ''));
+                    if (empty($studentName)) {
+                        $studentName = $student->name;
+                    }
+                }
+
+                $emailData = [
+                    'studentName' => $studentName,
+                    'facultyName' => $facultyName,
+                    'assignmentTitle' => $assignment->title,
+                    'courseName' => $course->course_name,
+                    'courseCode' => $course->course_code,
+                    'description' => $assignment->description ?? 'No description provided',
+                    'dueDate' => $dueDate,
+                ];
+
+                Mail::send([], [], function ($message) use ($student, $emailData) {
+                    $message->to($student->email)
+                        ->subject('New Assignment: ' . $emailData['assignmentTitle'])
+                        ->html($this->getNewAssignmentEmailTemplate($emailData));
+                });
+            }
+
+            \Log::info('New assignment notifications sent to ' . $students->count() . ' students for course: ' . $course->course_name);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send new assignment notifications: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get email template for new assignment notification
+     */
+    private function getNewAssignmentEmailTemplate($data)
+    {
+        return '
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+                    .info-box { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10B981; }
+                    .info-row { margin: 10px 0; }
+                    .label { font-weight: bold; color: #4a5568; }
+                    .value { color: #2d3748; }
+                    .due-date { background: #FEF3C7; color: #92400E; padding: 10px; border-radius: 6px; text-align: center; margin: 20px 0; font-weight: bold; }
+                    .footer { text-align: center; margin-top: 20px; color: #718096; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1 style="margin: 0;">📚 New Assignment Posted</h1>
+                    </div>
+                    <div class="content">
+                        <p>Dear ' . htmlspecialchars($data['studentName']) . ',</p>
+                        <p>A new assignment has been posted for your course.</p>
+                        
+                        <div class="info-box">
+                            <div class="info-row">
+                                <span class="label">Assignment:</span>
+                                <span class="value">' . htmlspecialchars($data['assignmentTitle']) . '</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Course:</span>
+                                <span class="value">' . htmlspecialchars($data['courseName']) . ' (' . htmlspecialchars($data['courseCode']) . ')</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Instructor:</span>
+                                <span class="value">' . htmlspecialchars($data['facultyName']) . '</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Description:</span>
+                                <span class="value">' . nl2br(htmlspecialchars($data['description'])) . '</span>
+                            </div>
+                        </div>
+                        
+                        <div class="due-date">
+                            ⏰ Due Date: ' . htmlspecialchars($data['dueDate']) . '
+                        </div>
+                        
+                        <p>Please log in to the system to view the full assignment details and submit your work before the due date.</p>
+                        
+                    </div>
+                </div>
+            </body>
+            </html>
+        ';
     }
 }

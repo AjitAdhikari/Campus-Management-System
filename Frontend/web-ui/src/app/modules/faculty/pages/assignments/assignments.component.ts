@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import StorageHelper from 'src/app/helpers/StorageHelper';
 import { Assignment, AssignmentService, AssignmentSubmission } from '../../../../services/assignment.service';
 import { Course, CourseService } from '../../../../services/course.service';
 
@@ -15,6 +16,7 @@ export class AssignmentsComponent implements OnInit {
   submissionsTarget: Assignment | null = null;
   selectedSubmission: AssignmentSubmission | null = null;
   loading = false;
+  facultyId: string | number | null = null;
 
   constructor(
     private assignmentService: AssignmentService,
@@ -22,6 +24,15 @@ export class AssignmentsComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+    if (userDetails) {
+      try {
+        const user = JSON.parse(userDetails);
+        this.facultyId = user?.id;
+      } catch (e) {
+        console.error('Error parsing user details:', e);
+      }
+    }
     this.loadAssignments();
     this.loadCourses();
   }
@@ -44,18 +55,19 @@ export class AssignmentsComponent implements OnInit {
   }
 
   loadCourses() {
-    this.courseService.getCourses().subscribe({
+    if (!this.facultyId) {
+      console.error('No faculty ID available');
+      return;
+    }
+
+    this.courseService.getFacultyCourses(this.facultyId).subscribe({
       next: (courses) => {
         this.courses = courses;
       },
       error: (error) => {
-        console.error('Failed to load courses', error);
+        console.error('Failed to load faculty courses', error);
       }
     });
-  }
-
-  clearForm() {
-    this.selectedFiles = [];
   }
 
   onFileSelected(event: Event) {
@@ -65,17 +77,24 @@ export class AssignmentsComponent implements OnInit {
     }
   }
 
-  submitAssignment(title: string, description: string, due: string, courseId: string) {
-    if (!title || !due || !courseId) {
-      alert('Please provide title, due date, and course');
+  submitAssignment(title: string, description: string, due: string) {
+    if (!title || !due) {
+      alert('Please provide title and due date');
       return;
     }
+
+    if (this.courses.length === 0) {
+      alert('No course assigned to you. Please contact administrator.');
+      return;
+    }
+
+    const courseId = this.courses[0].id;
 
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description || '');
     formData.append('due_date', due);
-    formData.append('course_id', courseId);
+    formData.append('course_id', String(courseId));
 
     if (this.selectedFiles.length > 0) {
       formData.append('attachment', this.selectedFiles[0]);
@@ -87,7 +106,7 @@ export class AssignmentsComponent implements OnInit {
         if (response.success) {
           alert('Assignment created successfully');
           this.loadAssignments();
-          this.clearForm();
+          this.selectedFiles = [];
           this.showForm = false;
         }
         this.loading = false;
@@ -101,7 +120,7 @@ export class AssignmentsComponent implements OnInit {
   }
 
   openCreate() {
-    console.log('openCreate called');
+    this.selectedFiles = [];
     this.showForm = true;
   }
 
@@ -133,15 +152,10 @@ export class AssignmentsComponent implements OnInit {
     this.assignmentService.updateSubmissionFeedback(s.id, s.feedback || '', s.grade).subscribe({
       next: (response) => {
         if (response.success) {
-          let studentName = 'student';
-          if (s.student) {
-            if (s.student.profile && s.student.profile.first_name) {
-              studentName = `${s.student.profile.first_name} ${s.student.profile.last_name || ''}`;
-            } else if (s.student.name) {
-              studentName = s.student.name;
-            }
-          }
-          alert('Feedback saved for ' + studentName.trim());
+          const studentName = s.student?.profile?.first_name 
+            ? `${s.student.profile.first_name} ${s.student.profile.last_name || ''}`.trim()
+            : s.student?.name || 'student';
+          alert('Feedback saved for ' + studentName);
           this.closeFeedbackForm();
           this.openSubmissions(this.submissionsTarget!);
         }

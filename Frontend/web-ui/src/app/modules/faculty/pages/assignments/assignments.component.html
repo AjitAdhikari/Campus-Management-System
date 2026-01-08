@@ -31,18 +31,13 @@
 	<div class="modal-overlay" *ngIf="showForm">
 		<div class="modal">
 			<div class="modal-header">
-				<button class="close" (click)="clearForm(); showForm = false">✕</button>
+				<button class="close" (click)="showForm = false">✕</button>
 			</div>
 			<div class="modal-body">
-				<form (ngSubmit)="submitAssignment(title.value, description.value, due.value, courseSelect.value)">
-					<div class="field">
-						<label class="label">Course *</label>
-						<select #courseSelect required>
-							<option value="">Select a course</option>
-							<option *ngFor="let course of courses" [value]="course.id">
-								{{ course.course_name }} ({{ course.course_code }})
-							</option>
-						</select>
+				<form (ngSubmit)="submitAssignment(title.value, description.value, due.value)">
+					<div class="field" *ngIf="courses.length > 0">
+						<label class="label">Course</label>
+						<input type="text" [value]="courses[0].course_name + ' (' + courses[0].course_code + ')'" readonly style="background: #F3F4F6; cursor: not-allowed;" />
 					</div>
 					<div class="field">
 						<label class="label">Title *</label>
@@ -65,7 +60,7 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn" (click)="clearForm(); showForm = false"
+						<button type="button" class="btn" (click)="showForm = false"
 							[disabled]="loading">Cancel</button>
 						<button type="submit" class="btn primary" [disabled]="loading">{{ loading ? 'Creating...' :
 							'Create Assignment' }}</button>
