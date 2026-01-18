@@ -65,6 +65,8 @@ Route::prefix('notices')->group(function () {
     Route::get('/{id}', [NoticeController::class, 'get']);
 });
 
+Route::get('/university-notices', [\App\Http\Controllers\UniversityNoticeController::class, 'fetchNotices']);
+
 
  // Courses
     Route::apiResource('courses', CourseController::class);

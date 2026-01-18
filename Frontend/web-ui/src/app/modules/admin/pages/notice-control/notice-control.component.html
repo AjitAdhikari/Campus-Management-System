@@ -1,29 +1,10 @@
 <div class="notice-control-wrapper">
-    
-    <div class="notice-header">
-        <h2>Notice Center</h2>
-
-        <div class="notice-actions">
-            <div class="toggle-buttons" role="tablist" aria-label="Notice views">
-                <button type="button" class="toggle-btn" [class.active]="currentView === 'admin'"
-                    (click)="selectView('admin')" [attr.aria-pressed]="currentView === 'admin'">
-                    Admin Notice
-                </button>
-
-                <button type="button" class="toggle-btn" [class.active]="currentView === 'university'"
-                    (click)="selectView('university')" [attr.aria-pressed]="currentView === 'university'">
-                    University Notice
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div class="notice-grid">
 
         
         <section class="notice-publish card notice-full-row" *ngIf="currentView === 'admin'">
             <header class="card-header card-header-actions">
-                <h3> Upload Notice</h3>
+                <h3>Create Notice</h3>
                 <div>
                     <button type="button" class="btn btn-primary" (click)="openCreate($event)">+ Create</button>
                 </div>
@@ -60,11 +41,11 @@
             </div>
         </section>
 
-        <aside class="university-notices card notice-full-row" *ngIf="currentView === 'university'">
+        <!-- <aside class="university-notices card notice-full-row" *ngIf="currentView === 'university'">
             <header class="card-header">
                 <h3>University Notices</h3>
             </header>
-        </aside>
+        </aside> -->
     </div>
 
 </div>

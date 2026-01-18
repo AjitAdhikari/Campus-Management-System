@@ -11,26 +11,53 @@
         </div>
     </div>
 
-    <div class="notice-list">
-        <div *ngIf="loading" class="empty">Loading notices…</div>
-        <div *ngIf="!loading && filteredNotices.length === 0" class="empty">No notices from {{ selectedSource }}.</div>
-        <ul *ngIf="!loading && filteredNotices.length > 0">
-            <li *ngFor="let n of filteredNotices" class="notice-row">
-                <div class="notice-summary">
-                    <div class="title">{{ n.title }}</div>
-                    <div class="meta">{{ n.notice_date | date:'mediumDate' }} • Created: {{ n.created_at | date:'mediumDate' }}</div>
-                </div>
-                <div class="actions">
-                    <button type="button" (click)="viewNotice(n)">View</button>
-                </div>
-            </li>
-        </ul>
-    </div>
+        <div class="notice-list">
+                <div *ngIf="loading" class="empty">Loading notices…</div>
+                <div *ngIf="!loading && filteredNotices.length === 0" class="empty">No notices from {{ selectedSource }}.</div>
+                <ul *ngIf="!loading && filteredNotices.length > 0">
+                        <li *ngFor="let n of filteredNotices" class="notice-row">
+                                <div class="notice-summary">
+                                        <div class="title">
+                                            <ng-container *ngIf="selectedSource === 'University'; else adminTitle">
+                                                <a *ngIf="n.url" href="https://exam.pu.edu.np/ViewAllNotice" target="_blank" rel="noopener">{{ n.title }}</a>
+                                                <span *ngIf="!n.url">{{ n.title }}</span>
+                                            </ng-container>
+                                            <ng-template #adminTitle>{{ n.title }}</ng-template>
+                                        </div>
+                                        <div class="meta">
+                                            <ng-container *ngIf="selectedSource === 'University'; else adminMeta">
+                                                {{ n.notice_date || '-' }}
+                                            </ng-container>
+                                            <ng-template #adminMeta>
+                                                {{ n.notice_date | date:'mediumDate' }} • Created: {{ n.created_at | date:'mediumDate' }}
+                                            </ng-template>
+                                        </div>
+                                </div>
+                                <div class="actions">
+                                        <button type="button" (click)="viewNotice(n)">View</button>
+                                </div>
+                        </li>
+                </ul>
+        </div>
 
-    <div class="notice-detail" *ngIf="selectedNotice">
-        <h3 class="detail-title">{{ selectedNotice.title }}</h3>
-        <div class="detail-meta">{{ selectedNotice.notice_date | date:'mediumDate' }}</div>
-        <p class="detail-body">{{ selectedNotice.description }}</p>
-        <button type="button" class="close-btn" (click)="closeNotice()">Close</button>
-    </div>
+        <div class="notice-detail" *ngIf="selectedNotice">
+                <h3 class="detail-title">{{ selectedNotice.title }}</h3>
+                <div class="detail-meta">
+                    <ng-container *ngIf="selectedSource === 'University'; else adminDetailMeta">
+                        {{ selectedNotice.notice_date || '-' }}
+                        <a *ngIf="selectedNotice.url" [href]="selectedNotice.url" target="_blank" rel="noopener">View Original</a>
+                    </ng-container>
+                    <ng-template #adminDetailMeta>
+                        {{ selectedNotice.notice_date | date:'mediumDate' }}
+                    </ng-template>
+                </div>
+                <p class="detail-body">
+                    <ng-container *ngIf="selectedSource === 'University'; else adminDetailBody">
+                        <span *ngIf="!selectedNotice.description">No description available. Please <a *ngIf="selectedNotice.url" [href]="selectedNotice.url" target="_blank" rel="noopener">view original notice</a>.</span>
+                        <span *ngIf="selectedNotice.description">{{ selectedNotice.description }}</span>
+                    </ng-container>
+                    <ng-template #adminDetailBody>{{ selectedNotice.description }}</ng-template>
+                </p>
+                <button type="button" class="close-btn" (click)="closeNotice()">Close</button>
+        </div>
 </div>

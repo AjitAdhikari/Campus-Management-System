@@ -96,7 +96,7 @@
 				<li *ngFor="let announcement of announcements" class="ann-item">
 					<a class="ann-link" [routerLink]="['/admin/notice-control']" [queryParams]="{ noticeId: announcement.id }">
 						<strong>{{ announcement.title }}</strong>
-						<p class="ann-preview">{{ announcement.description.substring(0, 60) }}...</p>
+						<p class="ann-preview">{{ announcement.description ? announcement.description.substring(0, 60) : '' }}...</p>
 						<span class="ann-date">{{ announcement.notice_date | date: 'short' }}</span>
 					</a>
 				</li>

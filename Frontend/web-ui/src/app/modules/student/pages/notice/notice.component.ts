@@ -25,8 +25,7 @@ export class NoticeComponent implements OnInit {
     this.selectedSource = source;
     this.selectedNotice = null;
     if (source === 'University') {
-      this.notices = [];
-      this.loading = false;
+      this.loadUniversityNotices();
     } else {
       this.loadNotices();
     }
@@ -53,6 +52,31 @@ export class NoticeComponent implements OnInit {
         this.loading = false;
         const message = err?.error?.error || 'Failed to load notices';
         this.toastr.error(message);
+      }
+    });
+  }
+
+  loadUniversityNotices() {
+    this.loading = true;
+    // Try backend first
+    this.noticeService.fetchUniversityNoticesBackend().subscribe({
+      next: (response) => {
+        this.notices = response.items || [];
+        this.loading = false;
+      },
+      error: () => {
+        // If backend fails, try direct fetch (client-side)
+        this.noticeService.fetchUniversityNoticesDirect().subscribe({
+          next: (response) => {
+            this.notices = response.items || [];
+            this.loading = false;
+          },
+          error: (err) => {
+            this.loading = false;
+            this.notices = [];
+            this.toastr.error('Failed to load university notices from both backend and direct fetch.');
+          }
+        });
       }
     });
   }
