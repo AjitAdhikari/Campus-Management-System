@@ -142,6 +142,10 @@ export class UserManagementComponent implements OnInit {
       alert('Please provide name and email.');
       return;
     }
+    if (!this.isValidName(t.name)) {
+      alert('Name must contain only alphabetic.');
+      return;
+    }
     if (!this.isValidEmail(t.email)) {
       alert('Please enter a valid email address.');
       return;
@@ -232,6 +236,12 @@ export class UserManagementComponent implements OnInit {
     if (!email) return false;
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
+  }
+
+  private isValidName(name: string | undefined): boolean {
+    if (!name) return false;
+    const re = /^[A-Za-z ]+$/;
+    return re.test(name.trim());
   }
 
   private assignCourseToFaculty(facultyId: string | number, courseName: string): void {
