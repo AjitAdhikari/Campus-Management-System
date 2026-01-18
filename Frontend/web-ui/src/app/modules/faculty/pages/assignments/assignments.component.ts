@@ -17,6 +17,7 @@ export class AssignmentsComponent implements OnInit {
   selectedSubmission: AssignmentSubmission | null = null;
   loading = false;
   facultyId: string | number | null = null;
+  todayString: string = '';
 
   constructor(
     private assignmentService: AssignmentService,
@@ -24,6 +25,8 @@ export class AssignmentsComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    const today = new Date();
+    this.todayString = today.toISOString().split('T')[0];
     const userDetails = StorageHelper.getLocalStorageItem('_user_details');
     if (userDetails) {
       try {
@@ -80,6 +83,13 @@ export class AssignmentsComponent implements OnInit {
   submitAssignment(title: string, description: string, due: string) {
     if (!title || !due) {
       alert('Please provide title and due date');
+      return;
+    }
+    const dueDate = new Date(due);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+    if (dueDate < today) {
+      alert('Due date cannot be in the past. Please write valid due date.');
       return;
     }
 

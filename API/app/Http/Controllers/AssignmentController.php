@@ -352,6 +352,7 @@ class AssignmentController extends Controller
                     .label { font-weight: bold; color: #4a5568; }
                     .value { color: #2d3748; }
                     .footer { text-align: center; margin-top: 20px; color: #718096; font-size: 14px; }
+                    .dashboard-link { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #667eea; color: #fff !important; border-radius: 6px; text-decoration: none; font-weight: bold; }
                 </style>
             </head>
             <body>
@@ -362,7 +363,6 @@ class AssignmentController extends Controller
                     <div class="content">
                         <p>Dear ' . htmlspecialchars($data['facultyName']) . ',</p>
                         <p>A student has submitted an assignment.</p>
-                        
                         <div class="info-box">
                             <div class="info-row">
                                 <span class="label">Student Name:</span>
@@ -381,9 +381,8 @@ class AssignmentController extends Controller
                                 <span class="value">' . htmlspecialchars($data['submittedAt']) . '</span>
                             </div>
                         </div>
-                        
+                        <a class="dashboard-link" href="http://localhost:4200/faculty/dashboard">View in dashboard</a>
                         <p>Please log in to the system to review the submission and provide feedback.</p>
-                        
                     </div>
                 </div>
             </body>
@@ -473,6 +472,7 @@ class AssignmentController extends Controller
                     .value { color: #2d3748; }
                     .due-date { background: #FEF3C7; color: #92400E; padding: 10px; border-radius: 6px; text-align: center; margin: 20px 0; font-weight: bold; }
                     .footer { text-align: center; margin-top: 20px; color: #718096; font-size: 14px; }
+                    .dashboard-link { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #10B981; color: #fff !important; border-radius: 6px; text-decoration: none; font-weight: bold; }
                 </style>
             </head>
             <body>
@@ -483,7 +483,6 @@ class AssignmentController extends Controller
                     <div class="content">
                         <p>Dear ' . htmlspecialchars($data['studentName']) . ',</p>
                         <p>A new assignment has been posted for your course.</p>
-                        
                         <div class="info-box">
                             <div class="info-row">
                                 <span class="label">Assignment:</span>
@@ -502,13 +501,11 @@ class AssignmentController extends Controller
                                 <span class="value">' . nl2br(htmlspecialchars($data['description'])) . '</span>
                             </div>
                         </div>
-                        
                         <div class="due-date">
                             ⏰ Due Date: ' . htmlspecialchars($data['dueDate']) . '
                         </div>
-                        
+                        <a class="dashboard-link" href="http://localhost:4200/student/dashboard">View in dashboard</a>
                         <p>Please log in to the system to view the full assignment details and submit your work before the due date.</p>
-                        
                     </div>
                 </div>
             </body>

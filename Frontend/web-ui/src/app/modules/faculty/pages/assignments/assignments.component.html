@@ -45,7 +45,7 @@
 					</div>
 					<div class="field">
 						<label class="label">Due Date *</label>
-						<input #due type="date" required />
+						<input #due type="date" required [min]="todayString" />
 					</div>
 					<div class="field">
 						<label class="label">Description</label>
