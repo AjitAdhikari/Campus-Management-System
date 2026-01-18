@@ -16,7 +16,6 @@ export class DashboardComponent implements OnInit {
     students: 0,
     teachers: 0,
     courses: 0,
-    fees: 0,
     notices: 0,
     departments: 0
   };
