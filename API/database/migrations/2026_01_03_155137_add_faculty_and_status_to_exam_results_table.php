@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('exam_results', function (Blueprint $table) {
-            $table->foreignUuid('faculty_id')->nullable()->after('student_id')->constrained('users')->cascadeOnDelete();
-            $table->enum('status', ['Pass', 'Fail'])->default('Fail')->after('grade');
+            if (!Schema::hasColumn('exam_results', 'faculty_id')) {
+                $table->foreignUuid('faculty_id')->nullable()->after('student_id')->constrained('users')->cascadeOnDelete();
+            }
+            if (!Schema::hasColumn('exam_results', 'status')) {
+                $table->enum('status', ['Pass', 'Fail'])->default('Fail')->after('grade');
+            }
         });
     }
 
