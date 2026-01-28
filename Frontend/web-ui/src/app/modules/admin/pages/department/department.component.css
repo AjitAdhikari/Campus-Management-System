@@ -42,16 +42,35 @@
     margin-right: 6px;
 }
 
+/* Table styling similar to user management */
 .dept-table {
     width: 100%;
     border-collapse: collapse;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.04);
+    overflow: hidden;
 }
 
 .dept-table th,
 .dept-table td {
+    padding: 12px 10px;
     text-align: left;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.dept-table th {
+    background: #f1f5f9;
+    color: #0b1220;
+    font-weight: 600;
+}
+
+.dept-table td {
+    background: #fff;
+}
+
+.dept-table tr:last-child td {
+    border-bottom: none;
 }
 
 .muted {
