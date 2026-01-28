@@ -11,7 +11,6 @@ import { User, UserService } from '../../../../services/user.service';
 })
 export class UserManagementComponent implements OnInit {
   users: User[] = [];
-  
   courses: Course[] = [];
   departments: string[] = [];
 
@@ -21,6 +20,8 @@ export class UserManagementComponent implements OnInit {
   tempUser: Partial<User> = {};
   searchTerm = '';
   roleFilter = 'Admin';
+  semesterFilter: number | null = null;
+  departmentFilter: string | null = null;
   loading = false;
   errorMessage = '';
 
@@ -44,18 +45,12 @@ export class UserManagementComponent implements OnInit {
       next: (courses) => {
         this.courses = courses;
       },
-      error: (error) => {
-        console.error('Error loading courses:', error);
-      }
     });
     
     this.courseService.getDepartments().subscribe({
       next: (departments) => {
         this.departments = departments.map(d => d.name);
       },
-      error: (error) => {
-        console.error('Error loading departments:', error);
-      }
     });
     
     this.loadUsers();
@@ -70,7 +65,6 @@ export class UserManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (err: any) => {
-        console.error('Failed to load users', err);
         this.errorMessage = 'Failed to load users.';
         this.loading = false;
       }
@@ -82,7 +76,17 @@ export class UserManagementComponent implements OnInit {
     return this.users.filter(u => {
       const matchesTerm = !term || u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term);
       const matchesRole = !this.roleFilter || u.roles.includes(this.roleFilter);
-      return matchesTerm && matchesRole;
+      let matchesSemester = true;
+      let matchesDepartment = true;
+      if (this.roleFilter === 'Student') {
+        if (this.semesterFilter !== null) {
+          matchesSemester = u.semester === this.semesterFilter;
+        }
+        if (this.departmentFilter !== null) {
+          matchesDepartment = u.department === this.departmentFilter;
+        }
+      }
+      return matchesTerm && matchesRole && matchesSemester && matchesDepartment;
     });
   }
 
@@ -109,7 +113,10 @@ export class UserManagementComponent implements OnInit {
     this.currentAddRole = role;
     this.tempUser = { name: '', email: '', roles: [role], status: 'Active' };
     if (role === 'Student') this.tempUser.semester = 1;
-    if (role === 'Faculty') this.tempUser.subjects = undefined;
+    if (role === 'Faculty') {
+      this.tempUser.subjects = undefined;
+      this.tempUser.department = undefined;
+    }
     this.showForm = true;
   }
 
@@ -120,8 +127,6 @@ export class UserManagementComponent implements OnInit {
   countByRole(role: string): number {
     return this.users.filter(u => u.roles.includes(role)).length;
   }
-
-  
 
   openEdit(user: User): void {
     this.editing = true;
@@ -185,50 +190,49 @@ export class UserManagementComponent implements OnInit {
       if (t.department) payload.department = t.department;
 
       this.userService.update(t.id, payload).subscribe({
-          next: () => {
-          if (role === 'Faculty' && t.subjects && t.id) {
-            this.assignCourseToFaculty(t.id, t.subjects);
-          } else if (role === 'Student' && (t as any).semester && t.id) {
-            this.assignCoursesToStudent(t.id, (t as any).semester);
-          } else {
-            this.loading = false;
-            this.closeForm();
-            this.loadUsers();
-          }
+        next: () => {
+          this.handlePostSave(t, role);
         },
-          error: (err: any) => {
-            console.error('Failed to update user', err);
-            alert('Failed to update user.');
-            this.loading = false;
-          }
+        error: (err: any) => {
+          alert('Failed to update user.');
+          this.loading = false;
+        }
       });
     } else {
-      const payload: Partial<User> & { roles: string[] } = {
+      // For create, include course_id for faculty and semester for students to handle assignment in one save
+      const courseId = role === 'Faculty' && t.subjects ? this.courses.find(c => c.course_name === t.subjects)?.id : undefined;
+      const payload: Partial<User> & { roles: string[]; course_id?: number } = {
         ...t,
         roles: [role],
         status: t.status || 'Active',
         semester: role === 'Student' ? ((t as any).semester || 1) : undefined,
-        department: t.department || undefined
+        department: t.department || undefined,
+        course_id: courseId
       };
 
       this.userService.create(payload).subscribe({
-          next: (createdUser: User) => {
-          if (role === 'Faculty' && t.subjects && createdUser.id) {
-            this.assignCourseToFaculty(createdUser.id, t.subjects);
-          } else if (role === 'Student' && (t as any).semester && createdUser.id) {
-            this.assignCoursesToStudent(createdUser.id, (t as any).semester);
-          } else {
-            this.loading = false;
-            this.closeForm();
-            this.loadUsers();
-          }
+        next: (createdUser: User) => {
+          this.loading = false;
+          this.closeForm();
+          this.loadUsers();
         },
-          error: (err: any) => {
-            console.error('Failed to create user', err);
-            alert('Failed to create user.');
-            this.loading = false;
-          }
+        error: (err: any) => {
+          alert('Failed to create user.');
+          this.loading = false;
+        }
       });
+    }
+  }
+
+  private handlePostSave(user: User, role: string): void {
+    if (role === 'Faculty' && user.subjects && user.id) {
+      this.assignCourseToFaculty(user.id, user.subjects);
+    } else if (role === 'Student' && (user as any).semester && user.id) {
+      this.assignCoursesToStudent(user.id, (user as any).semester);
+    } else {
+      this.loading = false;
+      this.closeForm();
+      this.loadUsers();
     }
   }
 
@@ -247,7 +251,6 @@ export class UserManagementComponent implements OnInit {
   private assignCourseToFaculty(facultyId: string | number, courseName: string): void {
     const course = this.courses.find(c => c.course_name === courseName);
     if (!course) {
-      console.error('Course not found:', courseName);
       this.loading = false;
       this.closeForm();
       this.loadUsers();
@@ -256,14 +259,12 @@ export class UserManagementComponent implements OnInit {
 
     this.courseService.assignCourseToFaculty(facultyId, course.id).subscribe({
       next: (response) => {
-        console.log('Course assigned successfully:', response);
         this.loading = false;
         this.closeForm();
         this.loadUsers();
       },
       error: (err: any) => {
-        console.error('Failed to assign course to faculty', err);
-        alert('User saved but failed to assign course.');
+         alert('User saved but failed to assign course.');
         this.loading = false;
         this.closeForm();
         this.loadUsers();
@@ -274,13 +275,11 @@ export class UserManagementComponent implements OnInit {
   private assignCoursesToStudent(studentId: string | number, semester: number): void {
     this.courseService.assignCoursesToStudent(studentId, semester).subscribe({
       next: (response) => {
-        console.log('Courses assigned successfully:', response);
         this.loading = false;
         this.closeForm();
         this.loadUsers();
       },
       error: (err: any) => {
-        console.error('Failed to assign courses to student', err);
         alert('User saved but failed to assign courses.');
         this.loading = false;
         this.closeForm();
@@ -299,7 +298,6 @@ export class UserManagementComponent implements OnInit {
         this.loadUsers();
       },
       error: (err: any) => {
-        console.error('Failed to delete user', err);
         alert('Failed to delete user.');
         this.loading = false;
       }
@@ -328,7 +326,6 @@ export class UserManagementComponent implements OnInit {
         this.loadingFacultyData = false;
       },
       error: (error: any) => {
-        console.error('Error loading attendance:', error);
         this.loadingFacultyData = false;
       }
     });
@@ -340,19 +337,15 @@ export class UserManagementComponent implements OnInit {
     this.showAssignmentsModal = true;
     this.selectedFacultyAssignments = [];
 
-    // Note: This requires the backend to support fetching assignments by faculty ID
-    // For now, we'll use a workaround by filtering all assignments
     this.assignmentService.getFacultyAssignments().subscribe({
       next: (response) => {
         if (response.success) {
           const assignments = Array.isArray(response.data) ? response.data : [response.data];
-          // Filter by faculty ID if needed
           this.selectedFacultyAssignments = assignments.filter((a: Assignment) => a.faculty_id === faculty.id);
         }
         this.loadingFacultyData = false;
       },
       error: (error) => {
-        console.error('Error loading assignments:', error);
         this.loadingFacultyData = false;
       }
     });
@@ -368,5 +361,11 @@ export class UserManagementComponent implements OnInit {
     this.showAssignmentsModal = false;
     this.selectedFacultyAssignments = [];
     this.selectedFacultyName = '';
+  }
+
+  // --- ADDED: Filter courses by selected department for Faculty ---
+  get filteredCoursesByDepartment(): Course[] {
+    if (!this.tempUser.department) return [];
+    return this.courses.filter(c => c.department === this.tempUser.department);
   }
 }
