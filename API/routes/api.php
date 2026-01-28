@@ -111,10 +111,10 @@ Route::get('/university-notices', [\App\Http\Controllers\UniversityNoticeControl
 
     // Attendance
     Route::prefix('attendance')->group(function () {
-        Route::get('/', [AttendanceController::class, 'index']); // Get all attendance
-        Route::post('/', [AttendanceController::class, 'store']); // Clock in
-        Route::get('/{facultyId}', [AttendanceController::class, 'show']); // Get faculty attendance
-        Route::delete('/{facultyId}', [AttendanceController::class, 'destroy']); // Clear faculty attendance
+        Route::get('/', [AttendanceController::class, 'index']); 
+        Route::post('/', [AttendanceController::class, 'store']); 
+        Route::get('/{facultyId}', [AttendanceController::class, 'show']); 
+        Route::delete('/{facultyId}', [AttendanceController::class, 'destroy']); 
     });
 
      Route::get(

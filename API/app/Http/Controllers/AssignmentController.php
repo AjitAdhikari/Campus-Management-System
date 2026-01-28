@@ -381,7 +381,7 @@ class AssignmentController extends Controller
                                 <span class="value">' . htmlspecialchars($data['submittedAt']) . '</span>
                             </div>
                         </div>
-                        <a class="dashboard-link" href="http://localhost:4200/faculty/dashboard">View in dashboard</a>
+                        <a class="dashboard-link" href="http://localhost:4200/login">View in dashboard</a>
                         <p>Please log in to the system to review the submission and provide feedback.</p>
                     </div>
                 </div>
@@ -504,7 +504,7 @@ class AssignmentController extends Controller
                         <div class="due-date">
                             ⏰ Due Date: ' . htmlspecialchars($data['dueDate']) . '
                         </div>
-                        <a class="dashboard-link" href="http://localhost:4200/student/dashboard">View in dashboard</a>
+                        <a class="dashboard-link" href="http://localhost:4200/login">View in dashboard</a>
                         <p>Please log in to the system to view the full assignment details and submit your work before the due date.</p>
                     </div>
                 </div>
