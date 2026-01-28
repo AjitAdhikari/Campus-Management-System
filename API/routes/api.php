@@ -90,10 +90,6 @@ Route::get('/university-notices', [\App\Http\Controllers\UniversityNoticeControl
         Route::post('/submissions/{submissionId}/feedback', [AssignmentController::class, 'updateSubmissionFeedback']); // Faculty feedback
     });
     
-    // Route::middleware('auth:sanctum')->group(function () {
-    //     Route::post('assignment-submissions', [AssignmentSubmissionController::class, 'store']);
-    //     Route::put('assignment-submissions/{assignmentSubmission}', [AssignmentSubmissionController::class, 'update']);
-    // });
 
     // Exams & Results
     Route::apiResource('exams', ExamController::class)->only(['index','store']);
