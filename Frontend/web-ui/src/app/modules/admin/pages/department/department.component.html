@@ -40,10 +40,13 @@
 
             <div class="form-body">
                 <label>Title</label>
-                <input type="text" [(ngModel)]="formModel.name" />
+                <input type="text" [(ngModel)]="formModel.name" pattern="^[A-Za-z ]+$"
+                    title="Title must contain only letters and spaces." required />
+
 
                 <label>Code</label>
-                <input type="text" [(ngModel)]="formModel.code" />
+                <input type="number" step="1" min="0" [(ngModel)]="formModel.code" [readonly]="isEdit"
+                    [class.readonly-input]="isEdit" />
 
                 <label>Description</label>
                 <textarea rows="4" [(ngModel)]="formModel.description"></textarea>

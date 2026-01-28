@@ -21,7 +21,7 @@ export class DepartmentComponent implements OnInit {
   formModel: Partial<Department> = { name: '', code: '', description: '' };
   loading = false;
 
-  constructor(private deptService: DepartmentService) {}
+  constructor(private deptService: DepartmentService) { }
 
   ngOnInit(): void {
     this.load();
@@ -55,8 +55,19 @@ export class DepartmentComponent implements OnInit {
 
   save() {
     if (!this.formModel.name || this.formModel.name.trim() === '') return;
+
+    if (!this.formModel.name || !/^[A-Za-z ]+$/.test(this.formModel.name.trim())) {
+      alert('Title must contain only letters and spaces.');
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
-    const payload: Partial<DepartmentPayload> = { name: (this.formModel.name || '').trim(), code: this.formModel.code || null, description: this.formModel.description || null };
+    const payload: Partial<DepartmentPayload> = {
+      name: (this.formModel.name || '').trim(),
+      code: this.formModel.code || null,
+      description: this.formModel.description || null
+    };
     if (this.isEdit && this.formModel.id != null) {
       this.deptService.update(this.formModel.id as any, payload).subscribe({
         next: () => { this.load(); this.cancel(); },

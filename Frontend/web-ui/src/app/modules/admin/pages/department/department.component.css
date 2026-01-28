@@ -1,4 +1,3 @@
-/* Department page styles */
 .dept-root {
     position: relative;
     padding: 16px;
@@ -16,6 +15,14 @@
     border: 1px solid #ccc;
     background: #fff;
     cursor: pointer;
+}
+
+.readonly-input {
+    background: #f3f4f6;
+    color: #6b7280;
+    filter: blur(0.2px);
+    cursor: not-allowed;
+    opacity: 0.85;
 }
 
 .btn-primary {
@@ -74,7 +81,6 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     display: flex;
     flex-direction: column;
-    /* kept minimal; no transform needed */
 }
 
 .form-head {
