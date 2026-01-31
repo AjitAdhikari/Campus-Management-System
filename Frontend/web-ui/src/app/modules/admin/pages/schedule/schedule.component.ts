@@ -26,8 +26,9 @@ export class ScheduleComponent implements OnInit {
   
   // Data for dropdowns
   courses: Course[] = [];
+  allCourses: Course[] = [];
   faculties: User[] = [];
-  courseFacultyMap: Map<number, string> = new Map();
+  facultyCourses: Course[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -42,7 +43,6 @@ export class ScheduleComponent implements OnInit {
     this.loadSchedules();
     this.loadCourses();
     this.loadFaculties();
-    this.loadCourseFacultyAssignments();
   }
 
   initializeForms(): void {
@@ -75,7 +75,6 @@ export class ScheduleComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Failed to load schedules', error);
         this.errorMessage = 'Failed to load schedules. Please try again.';
         this.schedules = [];
         this.isLoading = false;
@@ -87,9 +86,10 @@ export class ScheduleComponent implements OnInit {
     this.courseService.getCourses().subscribe({
       next: (data) => {
         this.courses = data;
+        this.allCourses = data;
       },
       error: (error) => {
-        console.error('Failed to load courses', error);
+        // handle error
       }
     });
   }
@@ -97,40 +97,12 @@ export class ScheduleComponent implements OnInit {
   loadFaculties(): void {
     this.userService.list().subscribe({
       next: (data: User[]) => {
-        // Filter only faculty users
         this.faculties = data.filter((user: User) => 
           user.roles.includes('Faculty') || user.roles.includes('faculty')
         );
       },
       error: (error: any) => {
-        console.error('Failed to load faculties', error);
-      }
-    });
-  }
-
-  loadCourseFacultyAssignments(): void {
-    this.userService.list().subscribe({
-      next: (users: User[]) => {
-        const faculties = users.filter((user: User) => 
-          user.roles.includes('Faculty') || user.roles.includes('faculty')
-        );
-        
-        // For each faculty, get their assigned courses
-        faculties.forEach(faculty => {
-          this.courseService.getFacultyCourses(faculty.id).subscribe({
-            next: (courses: Course[]) => {
-              courses.forEach(course => {
-                this.courseFacultyMap.set(course.id, String(faculty.id));
-              });
-            },
-            error: (error) => {
-              console.error('Failed to load faculty courses', error);
-            }
-          });
-        });
-      },
-      error: (error) => {
-        console.error('Failed to load faculties for mapping', error);
+        // handle error
       }
     });
   }
@@ -138,16 +110,30 @@ export class ScheduleComponent implements OnInit {
   openAddModal(): void {
     this.showAddModal = true;
     this.scheduleForm.reset({ isActive: true });
-    this.setupCourseChangeListener();
+    this.courses = this.allCourses;
+    this.setupFacultyChangeListener();
   }
 
-  setupCourseChangeListener(): void {
-    this.scheduleForm.get('course_id')?.valueChanges.subscribe((courseId) => {
-      if (courseId) {
-        const facultyId = this.courseFacultyMap.get(Number(courseId));
-        if (facultyId) {
-          this.scheduleForm.patchValue({ faculty_id: facultyId });
-        }
+  setupFacultyChangeListener(): void {
+    this.scheduleForm.get('faculty_id')?.valueChanges.subscribe((facultyId) => {
+      if (facultyId) {
+        this.courseService.getFacultyCourses(facultyId).subscribe({
+          next: (courses: Course[]) => {
+            this.courses = courses.length > 0 ? courses : this.allCourses;
+            if (courses.length === 1) {
+              this.scheduleForm.patchValue({ course_id: courses[0].id });
+            } else {
+              this.scheduleForm.patchValue({ course_id: '' });
+            }
+          },
+          error: () => {
+            this.courses = this.allCourses;
+            this.scheduleForm.patchValue({ course_id: '' });
+          }
+        });
+      } else {
+        this.courses = this.allCourses;
+        this.scheduleForm.patchValue({ course_id: '' });
       }
     });
   }
@@ -155,12 +141,12 @@ export class ScheduleComponent implements OnInit {
   closeAddModal(): void {
     this.showAddModal = false;
     this.scheduleForm.reset();
+    this.courses = this.allCourses;
   }
 
   openEditModal(schedule: ClassSchedule): void {
     this.selectedSchedule = schedule;
     this.showEditModal = true;
-    
     this.editForm.patchValue({
       course_id: schedule.course_id,
       faculty_id: schedule.faculty_id,
@@ -169,8 +155,6 @@ export class ScheduleComponent implements OnInit {
       end_time: schedule.end_time,
       isActive: schedule.status === 'scheduled'
     });
-    
-    // Note: Course is locked in edit mode, so no need for change listener
   }
 
   closeEditModal(): void {
@@ -203,7 +187,6 @@ export class ScheduleComponent implements OnInit {
         setTimeout(() => this.clearMessages(), 3000);
       },
       error: (error) => {
-        console.error('Failed to create schedule', error);
         let errorMsg = 'Failed to create schedule. Please try again.';
         if (error.error?.message) {
           errorMsg = error.error.message;
@@ -238,7 +221,6 @@ export class ScheduleComponent implements OnInit {
         setTimeout(() => this.clearMessages(), 3000);
       },
       error: (error) => {
-        console.error('Failed to update schedule', error);
         this.errorMessage = 'Failed to update schedule. Please try again.';
       }
     });
@@ -254,15 +236,14 @@ export class ScheduleComponent implements OnInit {
           setTimeout(() => this.clearMessages(), 3000);
         },
         error: (error) => {
-          console.error('Failed to delete schedule', error);
           this.errorMessage = 'Failed to delete schedule. Please try again.';
         }
       });
     }
   }
+
   clearMessages(): void {
     this.successMessage = '';
     this.errorMessage = '';
   }
 }
-

@@ -118,21 +118,19 @@
 
         <form [formGroup]="scheduleForm" class="modal-form">
             <div class="form-group">
-                <label for="courseId">Course *</label>
-                <select id="courseId" formControlName="course_id" class="form-control">
-                    <option value="">Select a course</option>
-                    <option *ngFor="let course of courses" [value]="course.id">{{ course.course_name }} ({{ course.course_code }})</option>
-                </select>
-            </div>
-
-            <div class="form-group">
                 <label for="facultyId">Faculty *</label>
                 <select id="facultyId" formControlName="faculty_id" class="form-control">
                     <option value="">Select a faculty</option>
                     <option *ngFor="let faculty of faculties" [value]="faculty.id">{{ faculty.name }}</option>
                 </select>
             </div>
-
+            <div class="form-group">
+                <label for="courseId">Course *</label>
+                <select id="courseId" formControlName="course_id" class="form-control">
+                    <option value="">Select a course</option>
+                    <option *ngFor="let course of courses" [value]="course.id">{{ course.course_name }} ({{ course.course_code }})</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label for="classDate">Class Date *</label>
                 <input type="date" id="classDate" formControlName="class_date" class="form-control" />
@@ -187,6 +185,13 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="courseIdEdit">Course *</label>
+                <select id="courseIdEdit" formControlName="course_id" class="form-control">
+                    <option value="">Select a course</option>
+                    <option *ngFor="let course of courses" [value]="course.id">{{ course.course_name }} ({{ course.course_code }})</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label for="classDateEdit">Class Date *</label>
                 <input type="date" id="classDateEdit" formControlName="class_date" class="form-control" />
