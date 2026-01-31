@@ -15,7 +15,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
@@ -26,8 +26,9 @@ class AuthController extends Controller
         $user->semesters = $user_profile->semesters ?? null;
         $user->fees = $user_profile->fees ?? null;
         $user->department = $user_profile->department ?? null;
+        $user->avatar = $user_profile->avatar ? url('storage/' . $user_profile->avatar) : null;
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Invalid login credentials.'],
             ]);
@@ -42,8 +43,8 @@ class AuthController extends Controller
         // $token = 'hajsadh123123'; // Placeholder token for demonstration
         return response()->json([
             'message' => 'Login successful',
-            'user'    => $user,
-            'token'   => $token
+            'user' => $user,
+            'token' => $token
         ]);
     }
 

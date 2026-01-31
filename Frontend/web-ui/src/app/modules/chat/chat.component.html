@@ -1,0 +1,138 @@
+<div class="chat-container">
+    <!-- Sidebar: Contacts -->
+    <div class="contacts-sidebar">
+        <div class="sidebar-header">
+            <div class="header-top">
+                <div class="title-with-badge">
+                    <h3>Messages</h3>
+                    <span *ngIf="totalUnread > 0" class="total-unread-badge">{{ totalUnread }}</span>
+                </div>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search contacts...">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+
+        <div class="contacts-list">
+            <div *ngFor="let contact of contacts" class="contact-item"
+                [class.active]="selectedContact?.id === contact.id" (click)="selectContact(contact)">
+                <div class="avatar-container">
+                    <img *ngIf="hasAvatar(contact)" [src]="getAvatar(contact)" alt="Avatar" class="avatar">
+                    <div *ngIf="!hasAvatar(contact)" class="avatar-placeholder"><i class="fas fa-user"></i></div>
+                    <span class="status-indicator" [class.online]="contact.status === 'Available'"></span>
+                </div>
+                <div class="contact-info">
+                    <div class="contact-name-row">
+                        <span class="name">{{ contact.name }}</span>
+                        <span class="time">{{ contact.last_message_at | date:'shortTime' }}</span>
+                    </div>
+                    <div class="contact-meta">
+                        <span *ngIf="currentUser?.role?.toLowerCase() !== 'faculty'" class="subject">{{ contact.subject
+                            }}</span>
+                        <span *ngIf="contact.unread_count > 0" class="unread-badge">{{ contact.unread_count }}</span>
+                    </div>
+                    <p class="last-message">{{ contact.last_message || 'No messages yet' }}</p>
+                </div>
+            </div>
+
+            <div *ngIf="contacts.length === 0" class="no-contacts">
+                <p>No contacts found.</p>
+                <small>Contacts appear based on your course assignments.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content: Message Window -->
+    <div class="message-window" [class.empty]="!selectedContact">
+        <ng-container *ngIf="selectedContact; else noSelection">
+            <div class="chat-header">
+                <div class="contact-details">
+                    <img *ngIf="hasAvatar(selectedContact)" [src]="getAvatar(selectedContact)" alt="Avatar"
+                        class="header-avatar">
+                    <div *ngIf="!hasAvatar(selectedContact)" class="header-avatar-placeholder"><i
+                            class="fas fa-user"></i></div>
+                    <div>
+                        <h4>{{ selectedContact.name }}</h4>
+                        <span class="subtitle">
+                            <ng-container *ngIf="currentUser?.role?.toLowerCase() !== 'faculty'">{{
+                                selectedContact.subject }} • </ng-container>
+                            {{ selectedContact.status }}
+                        </span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn action-btn"><i class="fas fa-phone-alt"></i></button>
+                    <button class="icon-btn action-btn"><i class="fas fa-video"></i></button>
+                    <button class="icon-btn action-btn"><i class="fas fa-info-circle"></i></button>
+                </div>
+            </div>
+
+            <div class="messages-container" #scrollMe>
+                <div *ngFor="let msg of messages" class="message-wrapper"
+                    [class.sent]="msg.sender_id === currentUser.id" [class.received]="msg.sender_id !== currentUser.id">
+                    <div class="avatar-wrapper">
+                        <img *ngIf="msg.sender_id === currentUser.id ? hasAvatar(currentUser) : hasAvatar(selectedContact)"
+                            [src]="msg.sender_id === currentUser.id ? getAvatar(currentUser) : getAvatar(selectedContact)"
+                            alt="Avatar" class="message-avatar">
+                        <div *ngIf="msg.sender_id === currentUser.id ? !hasAvatar(currentUser) : !hasAvatar(selectedContact)"
+                            class="message-avatar-placeholder"><i class="fas fa-user"></i></div>
+                    </div>
+                    <div class="message-bubble">
+                        <div *ngIf="msg.file_path" class="message-attachment">
+                            <img *ngIf="msg.file_type === 'image'" [src]="msg.file_path" alt="Image" class="chat-img"
+                                (click)="openFile(msg.file_path)">
+                            <div *ngIf="msg.file_type === 'pdf'" class="pdf-link">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>PDF Document</span>
+                                <a [href]="msg.file_path" target="_blank" class="download-link">View</a>
+                            </div>
+                        </div>
+                        <p *ngIf="msg.message">{{ msg.message }}</p>
+                        <span class="message-time">{{ msg.created_at | date:'shortTime' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div *ngIf="selectedFile" class="file-preview-bar">
+                    <div class="preview-content">
+                        <img *ngIf="filePreview" [src]="filePreview" alt="Preview">
+                        <div *ngIf="!filePreview" class="file-info">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>{{ selectedFile.name }}</span>
+                        </div>
+                    </div>
+                    <button class="remove-file-btn" (click)="removeFile()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="input-wrapper">
+                    <input type="file" #fileInput style="display: none;" (change)="onFileSelected($event)"
+                        accept="image/*,.pdf">
+                    <button class="attachment-btn" (click)="fileInput.click()"><i class="fas fa-plus"></i></button>
+                    <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()"
+                        placeholder="Share your thoughts or inquiries...">
+                    <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim() && !selectedFile">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-template #noSelection>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"></path>
+                    </svg>
+                </div>
+                <h2>Scholarly Discourse</h2>
+                <p>Select a colleague or student from the registry to begin your academic dialogue.</p>
+                <div class="decorative-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        </ng-template>
+    </div>
+</div>

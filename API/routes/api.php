@@ -11,6 +11,8 @@ use App\Http\Controllers\ClassScheduleController;
 use App\Http\Controllers\ExamResultController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\FacultyAttendanceController;
 
 
 
@@ -113,7 +115,15 @@ Route::get('/university-notices', [\App\Http\Controllers\UniversityNoticeControl
         Route::delete('/{facultyId}', [AttendanceController::class, 'destroy']); 
     });
 
-     Route::get(
+    Route::get(
         'faculty/attendance',
         [FacultyAttendanceController::class, 'index']
     );
+
+    // Chat Routes
+    Route::middleware('auth:sanctum')->prefix('chat')->group(function () {
+        Route::get('/contacts', [ChatController::class, 'getContacts']);
+        Route::get('/messages/{contactId}', [ChatController::class, 'getMessages']);
+        Route::post('/send', [ChatController::class, 'sendMessage']);
+    });
+

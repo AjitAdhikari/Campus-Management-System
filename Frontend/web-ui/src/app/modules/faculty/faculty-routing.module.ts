@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../../helpers/AuthGuard';
 
+import { ChatComponent } from '../chat/chat.component';
 import { PageSettingComponent } from '../setting/page-setting/page-setting.component';
 import { AssignmentsComponent } from './pages/assignments/assignments.component';
 import { AttendanceComponent } from './pages/attendance/attendance.component';
@@ -23,6 +24,7 @@ const routes: Routes = [
       { path: 'grades', component: GradesComponent },
       { path: 'notices', component: NoticesComponent },
       { path: 'attendance', component: AttendanceComponent },
+      { path: 'chat', component: ChatComponent },
       { path: 'setting', component: PageSettingComponent }
     ]
   }
