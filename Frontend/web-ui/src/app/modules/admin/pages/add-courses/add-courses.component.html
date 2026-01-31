@@ -4,6 +4,18 @@
 		<button class="btn btn-primary" (click)="showForm = true">+ Create</button>
 	</header>
 
+	<!-- Filter controls -->
+	<div class="filters" style="margin-bottom: 16px; display: flex; gap: 12px;">
+		<select [(ngModel)]="filterDepartment" class="form-control" style="max-width: 200px;">
+			<option value="">All Departments</option>
+			<option *ngFor="let dept of departments" [value]="dept.name">{{dept.name}}</option>
+		</select>
+		<select [(ngModel)]="filterSemester" class="form-control" style="max-width: 160px;">
+			<option value="">All Semesters</option>
+			<option *ngFor="let n of [1,2,3,4,5,6,7,8]" [ngValue]="n">Semester {{ n }}</option>
+		</select>
+	</div>
+
 	<hr />
 	<table class="table table-striped">
 		<thead>
@@ -18,10 +30,10 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr *ngIf="courses.length === 0">
-				<td colspan="7" class="muted">No courses added yet.</td>
+			<tr *ngIf="filteredCourses().length === 0">
+				<td colspan="7" class="muted">No courses found.</td>
 			</tr>
-			<tr *ngFor="let c of courses; let i = index">
+			<tr *ngFor="let c of filteredCourses(); let i = index">
 				<td>{{i + 1}}</td>
 				<td>{{c.course_name}}</td>
 				<td>{{c.course_code || '-'}}</td>
@@ -51,19 +63,20 @@
 						required.</div>
 
 					<label>Code</label>
-					<input name="code" #code="ngModel" required [(ngModel)]="model.code" class="form-control" />
+					<input name="code" #code="ngModel" required [(ngModel)]="model.code" class="form-control"
+						[disabled]="editingId !== null" />
 					<div *ngIf="code.invalid && (code.dirty || code.touched || f.submitted)" class="error">Code is
 						required.</div>
 
 					<label>Credit</label>
 					<input type="number" min="0" name="credit" #credit="ngModel" required [(ngModel)]="model.credit"
-						class="form-control" />
+						class="form-control" [disabled]="editingId !== null" />
 					<div *ngIf="credit.invalid && (credit.dirty || credit.touched || f.submitted)" class="error">Credit
 						is required.</div>
 
 					<label>Department</label>
 					<select name="department" #department="ngModel" required [(ngModel)]="model.department"
-						class="form-control">
+						class="form-control" [disabled]="editingId !== null">
 						<option value="">Select a Department</option>
 						<option *ngFor="let dept of departments" [value]="dept.name">{{dept.name}}</option>
 					</select>
@@ -72,18 +85,17 @@
 
 					<label>Semester</label>
 					<select name="semester" #semester="ngModel" required [(ngModel)]="model.semester"
-						class="form-control">
+						class="form-control" [disabled]="editingId !== null">
 						<option *ngFor="let n of [1,2,3,4,5,6,7,8]" [ngValue]="n">Semester {{ n }}</option>
 					</select>
 					<div *ngIf="semester.invalid && (semester.dirty || semester.touched || f.submitted)" class="error">
 						Please select a semester.</div>
 
-
-
 					<label>Syllabus</label>
-					<input type="file" name="syllabus" required (change)="onSyllabusSelected($event)"
-						class="form-control" accept=".pdf,.doc,.docx" />
-					<div *ngIf="f.submitted && !model.syllabus" class="error">Please attach a syllabus file (PDF, DOC,
+					<input type="file" name="syllabus" [required]="editingId === null"
+						(change)="onSyllabusSelected($event)" class="form-control" accept=".pdf,.doc,.docx" />
+					<div *ngIf="f.submitted && !model.syllabus && editingId === null" class="error">Please attach a
+						syllabus file (PDF, DOC,
 						DOCX).</div>
 					<small class="text-muted">Accepted formats: PDF, DOC, DOCX</small>
 				</div>

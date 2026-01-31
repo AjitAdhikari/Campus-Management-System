@@ -16,6 +16,10 @@ export class AddCoursesComponent implements OnInit {
 
   showForm = false;
 
+  // Filter properties
+  filterDepartment: string = '';
+  filterSemester: number | '' = '';
+
   constructor(private courseService: CourseService) {}
 
   ngOnInit() {
@@ -47,9 +51,18 @@ export class AddCoursesComponent implements OnInit {
     });
   }
 
+  // Filtering logic
+  filteredCourses() {
+    return this.courses.filter(c => {
+      const matchesDept = !this.filterDepartment || c.department === this.filterDepartment;
+      const matchesSem = !this.filterSemester || c.semester === this.filterSemester;
+      return matchesDept && matchesSem;
+    });
+  }
+
   submit(form: NgForm) {
     if (!form.valid) return;
-    if (!this.model.syllabus) {
+    if (!this.model.syllabus && this.editingId === null) {
       alert('Please attach a syllabus file.');
       return;
     }
