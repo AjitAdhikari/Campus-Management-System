@@ -45,10 +45,10 @@
 /* Table styling similar to user management */
 .dept-table {
     width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.04);
+    /* border-collapse: collapse; */
+    /* background: #fff; */
+    /* border-radius: 10px; */
+    /* box-shadow: 0 6px 20px rgba(2, 6, 23, 0.04); */
     overflow: hidden;
 }
 
@@ -56,13 +56,12 @@
 .dept-table td {
     padding: 12px 10px;
     text-align: left;
-    border-bottom: 1px solid #eef2f6;
+    /* border-bottom: 1px solid #eef2f6; */
 }
 
 .dept-table th {
-    background: #f1f5f9;
-    color: #0b1220;
-    font-weight: 600;
+    background-color: #94e7f9; 
+    color: #222; 
 }
 
 .dept-table td {

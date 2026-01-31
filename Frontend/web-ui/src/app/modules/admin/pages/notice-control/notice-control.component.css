@@ -1,11 +1,9 @@
 .notice-control-wrapper {
-    border-radius: 12px;
     max-width: 900px;
     margin: 2rem auto;
 }
 
 .notice-grid {
-    display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
@@ -183,17 +181,17 @@
     background: #e0e0e0;
 }
 .btn-primary {
-    background: #7b2eff;
+    background: #0ea5a4;
     color: #fff;
 }
 .btn-primary:hover {
-    background: #b83bff;
+    background: #0b8a87;
 }
 .btn-secondary {
     background: #ececec;
     color: #333;
 }
-.btn-secondary:hover {
+/* .btn-secondary:hover {
     background: #e0e0e0;
     color: #7b2eff;
-}
+} */
