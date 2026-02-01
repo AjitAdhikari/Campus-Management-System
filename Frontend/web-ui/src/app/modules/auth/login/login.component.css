@@ -12,14 +12,14 @@
     display: flex;
     height: 100%;
     width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #8d8de5 0%, #764ba2 100%);
     overflow: hidden;
 }
 
 /* Welcome Panel - Left Side */
 .welcome-panel {
     flex: 1;
-    background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);
+    background: linear-gradient(135deg, #1e1e1e 0%, #5b86e5 100%);
     position: relative;
     display: flex;
     align-items: center;
@@ -149,12 +149,12 @@
 .form-header h2 {
     font-size: 2.25rem;
     font-weight: 700;
-    color: #5b86e5;
+    color: #181818;
     margin-bottom: 12px;
 }
 
 .form-header p {
-    color: #94a3b8;
+    color: #474747;
     font-size: 0.9rem;
     line-height: 1.5;
 }
@@ -167,7 +167,7 @@
     display: block;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #64748b;
+    color: #050607;
     margin-bottom: 8px;
 }
 
@@ -324,6 +324,7 @@
     .welcome-panel {
         min-height: 40vh;
         padding: 40px 30px;
+        /* background-color: #764ba2; */
     }
 
     .welcome-text h1 {
