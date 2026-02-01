@@ -1,1 +1,294 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Color Palette */
+    --primary: #0ea5e9;
+    --primary-hover: #0284c7;
+    --secondary: #64748b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --background: #ffffff;
+    --surface: #ffffff;
+    --table-header: rgba(14, 165, 233, 0.08);
+    /* Professional light blue tint */
+
+    /* Neutral Shades */
+    --gray-50: #fcfcfc;
+    --gray-100: #f5f5f5;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+
+    /* Typography */
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+
+    /* Shadows & Effects */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--gray-800);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    color: var(--gray-900);
+    font-weight: 600;
+}
+
+/* Layout Classes */
+.wrapper {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    background: #ffffff;
+    width: 100%;
+}
+
+.cms-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s var(--transition);
+    z-index: 1000;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: #ffffff;
+    transition: var(--transition);
+}
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 999;
+}
+
+/* Desktop Mini-Sidebar (Collapsed State) */
+@media (min-width: 993px) {
+    .wrapper.sidebar-collapsed .cms-sidebar {
+        width: 90px;
+    }
+
+    .wrapper.sidebar-collapsed .brand-text,
+    .wrapper.sidebar-collapsed .ql-label,
+    .wrapper.sidebar-collapsed .section-title,
+    .wrapper.sidebar-collapsed .sidebar-footer {
+        display: none;
+    }
+
+    .wrapper.sidebar-collapsed .brand-link,
+    .wrapper.sidebar-collapsed .quick-link {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .wrapper.sidebar-collapsed .ql-icon {
+        margin: 0;
+        font-size: 1.4rem;
+    }
+}
+
+/* Mobile Off-Canvas Sidebar */
+@media (max-width: 992px) {
+    .cms-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+    }
+
+    .wrapper:not(.sidebar-collapsed) .cms-sidebar {
+        transform: translateX(0);
+    }
+
+    .wrapper:not(.sidebar-collapsed) .sidebar-backdrop {
+        display: block;
+    }
+
+    .main-content {
+        width: 100%;
+    }
+}
+
+.inner-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gray-300) transparent;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+
+/* UI Components */
+.card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+    transition: var(--transition);
+}
+
+.card:hover {
+    box-shadow: var(--shadow);
+}
+
+.btn {
+    padding: 0.625rem 1.25rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: var(--transition);
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+.sidebar-toggle {
+    background: transparent;
+    border: none;
+    color: var(--gray-600);
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.sidebar-toggle:hover {
+    background: var(--gray-50);
+    color: var(--primary);
+}
+
+/* Global Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+thead th {
+    background-color: var(--table-header);
+    color: var(--gray-800);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-50);
+    color: var(--gray-600);
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+tbody tr:hover {
+    background-color: #fafafa;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    font-family: inherit;
+    transition: var(--transition);
+    background: #ffffff;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+}
+
+@media (max-width: 900px) {
+    .wrapper {
+        flex-direction: column;
+    }
+
+    body {
+        overflow: auto;
+    }
+}

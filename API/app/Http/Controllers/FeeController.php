@@ -25,9 +25,9 @@ class FeeController extends Controller
     public function create(Request $request)
     {
         //
-       
 
-        try{
+
+        try {
             $validated = $request->validate([
                 'user_id' => 'required|exists:users,id',
                 'semester' => 'required|string',
@@ -36,7 +36,7 @@ class FeeController extends Controller
 
             $entity = new Fee();
             $entity->user_id = $validated['user_id'];
-            $entity->semester  = $validated['semester'];
+            $entity->semester = $validated['semester'];
             $entity->total_fee = $validated['total_fee'];
             $entity->created_by = 1;
             $entity->save();
@@ -46,35 +46,34 @@ class FeeController extends Controller
                 'id' => $entity->id
             ]);
 
-        } catch(\Exception $ex)
-        {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
-        } 
+        }
     }
 
 
     public function create_fee_details(Request $request)
     {
-        try{
+        try {
             $validated = $request->validate([
                 'user_id' => 'required|string ',
                 'semester' => 'required|string',
                 'payment_date' => 'required|string',
-                'amount' =>'required|numeric'
+                'amount' => 'required|numeric'
             ]);
 
             \Log::info('Payment request received:', $validated);
 
             // Get user to send email
             $user = User::find($validated['user_id']);
-            
+
             if (!$user) {
                 return response()->json(['error' => 'User not found'], 404);
             }
 
             // Get user profile to update wallet balance
             $userProfile = UserProfile::where('user_id', $validated['user_id'])->first();
-            
+
             if (!$userProfile) {
                 return response()->json(['error' => 'User profile not found'], 404);
             }
@@ -90,7 +89,7 @@ class FeeController extends Controller
             // Create fee detail record
             $entity = new FeeDetail();
             $entity->user_id = $validated['user_id'];
-            $entity->semester  = $validated['semester'];
+            $entity->semester = $validated['semester'];
             $entity->amount = $validated['amount'];
             $entity->payment_date = $validated['payment_date'];
             $entity->created_by = 1;
@@ -112,10 +111,9 @@ class FeeController extends Controller
                 'new_wallet_balance' => $newBalance
             ]);
 
-        } catch(\Exception $ex)
-        {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
-        } 
+        }
     }
 
     /**
@@ -124,7 +122,7 @@ class FeeController extends Controller
     public function store(Request $request)
     {
         //
-        try{
+        try {
             $validated = $request->validate([
                 'user_id' => 'required|exists:users,id',
                 'semester' => 'required|string',
@@ -133,7 +131,7 @@ class FeeController extends Controller
 
             $entity = Fee::findOrFail($validated['id']);
             $entity->user_id = $validated['user_id'] ?? $entity->user_id;
-            $entity->semester  = $validated['semester'] ?? $entity->semester;
+            $entity->semester = $validated['semester'] ?? $entity->semester;
             $entity->total_fee = $validated['total_fee'] ?? $entity->total_fee;
             $entity->updated_by = 1;
             $entity->save();
@@ -143,25 +141,24 @@ class FeeController extends Controller
                 'id' => $entity->id
             ]);
 
-        } catch(\Exception $ex)
-        {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
-        } 
+        }
     }
 
     public function update_fee_details(Request $request)
     {
-          $validated = $request->validate([
+        $validated = $request->validate([
             'user_id' => 'required|string ',
             'semester' => 'required|string',
             'payment_date' => 'required|string',
-            'amount' =>'required|integer'
+            'amount' => 'required|integer'
         ]);
 
-        try{
+        try {
             $entity = FeeDetail::findOrFail($validated['id']);
             $entity->user_id = $validated['user_id'] ?? $entity->user_id;
-            $entity->semester  = $validated['semester'] ?? $entity->semester;
+            $entity->semester = $validated['semester'] ?? $entity->semester;
             $entity->amount = $validated['amount'] ?? $entity->amount;
             $entity->payment_date = $validated['payment_date'] ?? $entity->payment_date;
             $entity->updated_by = 1;
@@ -172,10 +169,9 @@ class FeeController extends Controller
                 'id' => $entity->id
             ]);
 
-        } catch(\Exception $ex)
-        {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
-        } 
+        }
     }
 
     /**
@@ -183,49 +179,50 @@ class FeeController extends Controller
      */
     public function show($user_id)
     {
-        try
-        {
+        try {
             $fees = Fee::where('user_id', $user_id)->get();
-            
+
             // If no fees found in fees table, create a temporary one with fixed amount
             if ($fees->isEmpty()) {
                 $user = User::with('profile')->find($user_id);
-                
+
                 if ($user && $user->profile && $user->profile->semesters) {
                     // Use a FIXED constant for total_fee, NOT the wallet balance
                     // Wallet balance (user_profiles.fees) changes with payments
                     // Total fee should always remain 60000
                     $fixedTotalFee = 60000;
-                    
+
                     // Create a temporary fee record for display
-                    $fees = collect([[
-                        'user_id' => $user_id,
-                        'semester' => $user->profile->semesters,
-                        'total_fee' => $fixedTotalFee,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]]);
+                    $fees = collect([
+                        [
+                            'user_id' => $user_id,
+                            'semester' => $user->profile->semesters,
+                            'total_fee' => $fixedTotalFee,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ]
+                    ]);
                 }
             }
 
             // Calculate amount paid and due for each semester
-            $feesWithDetails = $fees->map(function($fee) use ($user_id) {
+            $feesWithDetails = $fees->map(function ($fee) use ($user_id) {
                 $semester = is_array($fee) ? $fee['semester'] : $fee->semester;
                 $totalFee = is_array($fee) ? floatval($fee['total_fee']) : floatval($fee->total_fee);
-                
+
                 // Get total paid for this semester
                 $totalPaid = floatval(FeeDetail::where('user_id', $user_id)
-                                               ->where('semester', $semester)
-                                               ->sum('amount'));
-                
+                    ->where('semester', $semester)
+                    ->sum('amount'));
+
                 $dueAmount = max(0, $totalFee - $totalPaid);
-                
+
                 // Get latest payment date
                 $latestPayment = FeeDetail::where('user_id', $user_id)
-                                          ->where('semester', $semester)
-                                          ->orderBy('payment_date', 'desc')
-                                          ->first();
-                
+                    ->where('semester', $semester)
+                    ->orderBy('payment_date', 'desc')
+                    ->first();
+
                 return [
                     'user_id' => $user_id,
                     'semester' => $semester,
@@ -236,24 +233,24 @@ class FeeController extends Controller
                     'status' => $dueAmount <= 0 ? 'Paid' : ($totalPaid > 0 ? 'Partial Payment' : 'Pending')
                 ];
             });
-            
+
             return response()->json([
                 'data' => $feesWithDetails
             ], 200);
-        } catch(\Exception $ex){
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
         }
     }
 
     public function show_fee_details($user_id)
-    {   
-        try { 
+    {
+        try {
             $entity = FeeDetail::where('user_id', $user_id)->get();
             return response()->json([
                 'data' => $entity
             ], 200);
 
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
         }
     }
@@ -266,7 +263,7 @@ class FeeController extends Controller
      */
     public function delete($id)
     {
-        try{
+        try {
             $entity = Fee::findOrFail($id);
             $entity->delete();
 
@@ -274,24 +271,21 @@ class FeeController extends Controller
                 'message' => 'Fee Deleted Successfully',
             ], 201);
 
-        }catch(\Exception $ex)
-        {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
         }
     }
 
     public function delete_fee_details($id)
     {
-        try
-        {
+        try {
             $entity = FeeDetail::findOrFail($id);
             $entity->delete();
             return response()->json([
                 'message' => 'Fee Details Deleted Successfully',
             ], 201);
-        }catch(\Exception $ex)
-        {
-            return response()->json(['error'=> $ex->getMessage()], 400);
+        } catch (\Exception $ex) {
+            return response()->json(['error' => $ex->getMessage()], 400);
         }
     }
 
@@ -305,7 +299,7 @@ class FeeController extends Controller
 
             // Filter by user name if provided
             if ($request->has('name') && $request->name) {
-                $query->whereHas('user', function($q) use ($request) {
+                $query->whereHas('user', function ($q) use ($request) {
                     $q->where('name', 'like', '%' . $request->name . '%');
                 });
             }
@@ -318,7 +312,7 @@ class FeeController extends Controller
             $payments = $query->orderBy('payment_date', 'desc')->get();
 
             // Transform data to include user details
-            $data = $payments->map(function($payment) {
+            $data = $payments->map(function ($payment) {
                 return [
                     'id' => $payment->id,
                     'user_id' => $payment->user_id,
@@ -334,62 +328,62 @@ class FeeController extends Controller
                 'data' => $data
             ], 200);
 
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
         }
     }
 
     /**
      * Get student fee summary with total, paid, and due amounts
-     * Requires BOTH name and semester to match the student's actual semester in database
+     * Returns all students if no filters provided, or filtered results
      */
     public function getStudentFeeSummary(Request $request)
     {
         try {
-            // Require both name and semester
-            if (!$request->has('name') || !$request->name || !$request->has('semester') || !$request->semester) {
-                return response()->json([
-                    'data' => []
-                ], 200);
-            }
-
+            // Start with base query for all students
             $query = User::with(['profile'])
-                ->whereHas('profile', function($q) use ($request) {
-                    $q->where('role', 'student')
-                      ->where('semesters', $request->semester); // Student's current semester must match
+                ->whereHas('profile', function ($q) {
+                    $q->where('role', 'student');
                 });
 
-            // Filter by exact or partial name match
-            $query->where('name', 'like', '%' . $request->name . '%');
+            // Apply semester filter if provided
+            if ($request->has('semester') && $request->semester) {
+                $query->whereHas('profile', function ($q) use ($request) {
+                    $q->where('semesters', $request->semester);
+                });
+            }
+
+            // Apply name filter if provided
+            if ($request->has('name') && $request->name) {
+                $query->where('name', 'like', '%' . $request->name . '%');
+            }
 
             $students = $query->get();
 
-            $data = $students->map(function($student) use ($request) {
-                $semester = $request->semester;
-                
+            $data = $students->map(function ($student) {
+                // Get student's current semester
+                $semester = $student->profile->semesters ?? '1';
+
                 // Get total fee for this student/semester
-                $totalFee = 0;
+                $totalFee = 60000; // Default fixed fee
                 $fee = Fee::where('user_id', $student->id)
-                          ->where('semester', $semester)
-                          ->first();
+                    ->where('semester', $semester)
+                    ->first();
                 if ($fee) {
                     $totalFee = floatval($fee->total_fee);
-                } else {
-                    // Fallback to user profile fees if no specific fee record
-                    $totalFee = floatval($student->profile->fees ?? 0);
                 }
 
                 // Get total paid for this student/semester
                 $totalPaid = floatval(FeeDetail::where('user_id', $student->id)
-                                               ->where('semester', $semester)
-                                               ->sum('amount'));
+                    ->where('semester', $semester)
+                    ->sum('amount'));
 
                 $dueAmount = max(0, $totalFee - $totalPaid);
 
                 return [
                     'user_id' => $student->id,
                     'user_name' => $student->name,
-                    'semester' => $student->profile->semesters ?? $semester,
+                    'semester' => $semester,
                     'total_amount' => $totalFee,
                     'amount_paid' => $totalPaid,
                     'due_payment' => $dueAmount
@@ -400,7 +394,7 @@ class FeeController extends Controller
                 'data' => $data->values()
             ], 200);
 
-        } catch(\Exception $ex) {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
         }
     }

@@ -3,41 +3,71 @@
 
   <div class="panel">
     <div class="search-controls">
-      <input type="text" placeholder="Enter student name" [(ngModel)]="searchName" />
-      <select [(ngModel)]="searchSemester">
-        <option value="">Select Semester</option>
-        <option *ngFor="let sem of semesterOptions" [value]="sem">Semester {{ sem }}</option>
-      </select>
-      <button class="btn-search" (click)="search()">Search</button>
-      <button class="btn-clear" (click)="clearFilters()">Clear</button>
+      <div class="filter-group">
+        <label class="filter-label">Filter by Semester</label>
+        <select [(ngModel)]="searchSemester" (change)="filterStudents()" class="filter-select">
+          <option value="">All Semesters</option>
+          <option *ngFor="let sem of semesterOptions" [value]="sem">Semester {{ sem }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Search by Student Name</label>
+        <input type="text" placeholder="Enter student name..." [(ngModel)]="searchName" (input)="filterStudents()"
+          class="filter-input" />
+      </div>
+
+      <button class="btn-clear" (click)="clearFilters()" *ngIf="searchName || searchSemester">
+        <i class="fas fa-times"></i> Clear Filters
+      </button>
     </div>
 
-    <table class="students-table">
-      <thead>
-        <tr>
-          <th>S.No</th>
-          <th>Student Name</th>
-          <th>Semester</th>
-          <th>Total Amount</th>
-          <th>Amount Paid</th>
-          <th>Due Payment</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let student of filteredStudents; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ student.user_name }}</td>
-          <td>{{ student.semester }}</td>
-          <td>₹{{ student.total_amount | number:'1.2-2' }}</td>
-          <td>₹{{ student.amount_paid | number:'1.2-2' }}</td>
-          <td>₹{{ student.due_payment | number:'1.2-2' }}</td>
-        </tr>
-        <tr *ngIf="filteredStudents.length === 0">
-          <td colspan="6" class="muted">
-            {{ (searchName && searchSemester) ? 'No student records found' : 'Please enter both student name and semester to search' }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="results-info">
+      <span class="results-count">Showing {{ filteredStudents.length }} of {{ studentFees.length }} students</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="students-table">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Student Name</th>
+            <th>Semester</th>
+            <th>Total Amount</th>
+            <th>Amount Paid</th>
+            <th>Due Payment</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let student of filteredStudents; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td class="student-name">{{ student.user_name }}</td>
+            <td><span class="semester-badge">Sem {{ student.semester }}</span></td>
+            <td class="amount">₹{{ student.total_amount | number:'1.2-2' }}</td>
+            <td class="amount paid">₹{{ student.amount_paid | number:'1.2-2' }}</td>
+            <td class="amount due">₹{{ student.due_payment | number:'1.2-2' }}</td>
+            <td>
+              <span class="status-badge" [class.paid]="student.due_payment === 0"
+                [class.pending]="student.due_payment > 0">
+                {{ student.due_payment === 0 ? 'Paid' : 'Pending' }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="filteredStudents.length === 0 && studentFees.length > 0">
+            <td colspan="7" class="no-results">
+              <i class="fas fa-search"></i>
+              <p>No students found matching your search criteria</p>
+            </td>
+          </tr>
+          <tr *ngIf="studentFees.length === 0">
+            <td colspan="7" class="no-results">
+              <i class="fas fa-inbox"></i>
+              <p>Loading student fee records...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

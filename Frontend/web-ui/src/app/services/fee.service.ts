@@ -67,6 +67,11 @@ export class FeeService {
     return this.http.get<any>('http://localhost:8000/api/student-fee-summary', { params });
   }
 
+  // Get all student fee summaries without filters
+  getAllStudentFeeSummary(): Observable<any> {
+    return this.http.get<any>('http://localhost:8000/api/student-fee-summary');
+  }
+
   // Get all fees
   getAllFees(): Observable<Fee[]> {
     return this.http.get<Fee[]>(this.apiUrl);
@@ -105,11 +110,11 @@ export class FeeService {
     if (!feeDetails || feeDetails.length === 0) {
       return null;
     }
-    
-    const sorted = [...feeDetails].sort((a, b) => 
+
+    const sorted = [...feeDetails].sort((a, b) =>
       new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime()
     );
-    
+
     return {
       amount: sorted[0].amount,
       date: this.formatDate(sorted[0].payment_date)

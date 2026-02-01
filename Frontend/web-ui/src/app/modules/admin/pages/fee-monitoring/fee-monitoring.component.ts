@@ -22,46 +22,58 @@ export class FeeMonitoringComponent implements OnInit {
 
   searchName: string = '';
   searchSemester: string = '';
-  
+
   semesterOptions: string[] = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
   constructor(private feeService: FeeService) { }
 
   ngOnInit(): void {
-    // Don't load data initially - require search criteria
+    // Load all students initially
+    this.loadAllStudentFees();
   }
 
-  loadStudentFees(): void {
-    // Require BOTH name and semester
-    if (!this.searchName || !this.searchSemester) {
-      this.studentFees = [];
-      this.filterStudents();
-      return;
-    }
-
-    this.feeService.getStudentFeeSummary(this.searchName, this.searchSemester).subscribe({
+  loadAllStudentFees(): void {
+    this.feeService.getAllStudentFeeSummary().subscribe({
       next: (response: any) => {
         this.studentFees = response.data || [];
-        this.filterStudents();
+        this.filteredStudents = this.studentFees;
       },
       error: (error) => {
         console.error('Error loading student fees:', error);
+        this.studentFees = [];
+        this.filteredStudents = [];
       }
     });
   }
 
   filterStudents(): void {
-    this.filteredStudents = this.studentFees;
+    let result = this.studentFees;
+
+    // First filter by semester if selected
+    if (this.searchSemester) {
+      result = result.filter(student =>
+        student.semester === this.searchSemester
+      );
+    }
+
+    // Then filter by name if entered
+    if (this.searchName && this.searchName.trim()) {
+      const searchTerm = this.searchName.toLowerCase().trim();
+      result = result.filter(student =>
+        student.user_name.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    this.filteredStudents = result;
   }
 
   search(): void {
-    this.loadStudentFees();
+    this.filterStudents();
   }
 
   clearFilters(): void {
     this.searchName = '';
     this.searchSemester = '';
-    this.studentFees = [];
-    this.filteredStudents = [];
+    this.filteredStudents = this.studentFees;
   }
 }

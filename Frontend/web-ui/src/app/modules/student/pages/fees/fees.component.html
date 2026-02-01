@@ -1,84 +1,183 @@
 <div class="fees-container">
-  <div class="invoice-header">
-    <h1>Manage Invoice</h1>
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Fee Management & Payment</h1>
+      <p class="subtitle">View your fee structure and make secure payments</p>
+    </div>
   </div>
 
-  <div class="table-wrapper">
-    <table class="invoice-table">
-      <thead>
-        <tr>
-          <th>S.No</th>
-          <th>Semester</th>
-          <th>Total Amount</th>
-          <th>Amount Paid</th>
-          <th>Due Payment</th>
-          <th>Paid Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let invoice of pendingFees; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ invoice.semester || 'N/A' }}</td>
-          <td>₹{{ invoice.totalAmount | number:'1.2-2' }}</td>
-          <td>₹{{ invoice.amountPay | number:'1.2-2' }}</td>
-          <td>₹{{ invoice.balancedAmount | number:'1.2-2' }}</td>
-          <td>{{ invoice.paidDate || 'Not Paid' }}</td>
-        </tr>
-        <tr *ngIf="pendingFees.length === 0">
-          <td colspan="6" class="no-data">No fee records found</td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Wallet Balance Card -->
+  <div class="wallet-card">
+    <div class="wallet-icon">
+      <i class="fas fa-wallet"></i>
+    </div>
+    <div class="wallet-info">
+      <span class="wallet-label">Available Balance</span>
+      <span class="wallet-amount">₹{{ walletBalance | number:'1.2-2' }}</span>
+    </div>
+    <div class="wallet-status">
+      <span class="status-badge" [class.sufficient]="walletBalance >= getTotalDue()"
+        [class.low]="walletBalance < getTotalDue()">
+        {{ walletBalance >= getTotalDue() ? 'Sufficient Funds' : 'Low Balance' }}
+      </span>
+    </div>
   </div>
 
-  <div class="payment-section payment-section-centered" *ngIf="pendingFees.length > 0">
-    <button (click)="openWalletPayment()" class="btn-proceed-payment">Proceed to Payment</button>
+  <!-- Fee Summary Table -->
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Fee Summary</h3>
+      <span class="record-count">{{ pendingFees.length }} Record(s)</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Semester</th>
+            <th>Total Fee</th>
+            <th>Amount Paid</th>
+            <th>Outstanding Balance</th>
+            <th>Last Payment Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of pendingFees; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td><span class="semester-badge">Semester {{ invoice.semester || 'N/A' }}</span></td>
+            <td class="amount-cell">₹{{ invoice.totalAmount | number:'1.2-2' }}</td>
+            <td class="amount-cell paid">₹{{ invoice.amountPay | number:'1.2-2' }}</td>
+            <td class="amount-cell due">₹{{ invoice.balancedAmount | number:'1.2-2' }}</td>
+            <td class="date-cell">{{ invoice.paidDate ? (invoice.paidDate | date:'MMM d, yyyy') : '—' }}</td>
+            <td>
+              <span class="payment-status" [class.paid]="invoice.balancedAmount === 0"
+                [class.pending]="invoice.balancedAmount > 0">
+                {{ invoice.balancedAmount === 0 ? 'Paid' : 'Pending' }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="pendingFees.length === 0">
+            <td colspan="7" class="no-data">
+              <i class="fas fa-inbox"></i>
+              <p>No fee records available</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Payment Action Section -->
+  <div class="payment-action-section" *ngIf="pendingFees.length > 0 && getTotalDue() > 0">
+    <div class="payment-summary">
+      <div class="summary-item">
+        <span class="summary-label">Total Outstanding:</span>
+        <span class="summary-value due">₹{{ getTotalDue() | number:'1.2-2' }}</span>
+      </div>
+    </div>
+    <button (click)="openWalletPayment()" class="btn-proceed-payment">
+      <i class="fas fa-credit-card"></i>
+      Proceed to Payment
+    </button>
   </div>
 </div>
 
-<!-- Wallet Payment Modal -->
-<div class="wallet-modal-overlay" *ngIf="showWalletModal" (click)="closeWalletModal()">
-  <div class="wallet-modal" (click)="$event.stopPropagation()">
-    <div class="wallet-header">
-      <h2>Wallet Payment</h2>
-      <button class="close-btn" (click)="closeWalletModal()">&times;</button>
+<!-- Payment Modal -->
+<div class="payment-modal-overlay" *ngIf="showWalletModal" (click)="closeWalletModal()">
+  <div class="payment-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-icon">
+        <i class="fas fa-money-check-alt"></i>
+      </div>
+      <div class="header-text">
+        <h2>Process Payment</h2>
+        <p>Complete your fee payment securely</p>
+      </div>
+      <button class="close-btn" (click)="closeWalletModal()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
-    <div class="wallet-body">
-      <div class="wallet-balance-display">
-        <div class="balance-label">Available Wallet Balance</div>
+    <div class="modal-body">
+      <!-- Balance Display -->
+      <div class="balance-card">
+        <div class="balance-header">
+          <i class="fas fa-wallet"></i>
+          <span>Available Balance</span>
+        </div>
         <div class="balance-amount">₹{{ walletBalance | number:'1.2-2' }}</div>
-      </div>
-
-      <div class="payment-input-section">
-        <label for="paymentAmount">Enter Payment Amount:</label>
-        <div class="amount-input-wrapper">
-          <span class="currency-symbol">₹</span>
-          <input type="number" id="paymentAmount" [(ngModel)]="paymentAmount" [max]="getTotalDue()" min="1" step="0.01"
-            class="payment-amount-input" placeholder="">
-        </div>
-        <div class="quick-amount-buttons">
-          <button type="button" class="quick-btn" (click)="paymentAmount = getTotalDue()">Pay Full</button>
-          <button type="button" class="quick-btn" (click)="paymentAmount = getTotalDue() / 2">Pay 50%</button>
+        <div class="balance-footer">
+          <span class="balance-status" [class.sufficient]="walletBalance >= getTotalDue()">
+            {{ walletBalance >= getTotalDue() ? '✓ Sufficient for full payment' : '⚠ Insufficient balance' }}
+          </span>
         </div>
       </div>
 
-      <div class="wallet-actions">
-        <button class="btn-cancel" (click)="closeWalletModal()">Cancel</button>
-        <button class="btn-confirm-payment" (click)="confirmPayment()"
-          [disabled]="walletBalance < paymentAmount || paymentAmount <= 0 || isProcessingPayment">
-          {{ isProcessingPayment ? 'Processing...' : (walletBalance < paymentAmount ? 'Insufficient Balance' : 'Confirm Payment') }}
-        </button>
+      <!-- Payment Amount Input -->
+      <div class="payment-form">
+        <label class="form-label">Payment Amount</label>
+        <div class="amount-input-group">
+          <span class="currency-prefix">₹</span>
+          <input type="number" [(ngModel)]="paymentAmount" [max]="getTotalDue()" min="1" step="0.01"
+            class="amount-input" placeholder="0.00">
+        </div>
+
+        <div class="quick-actions">
+          <button type="button" class="quick-btn" (click)="paymentAmount = getTotalDue()">
+            <i class="fas fa-check-circle"></i> Pay Full Amount
+          </button>
+          <button type="button" class="quick-btn" (click)="paymentAmount = getTotalDue() / 2">
+            <i class="fas fa-percent"></i> Pay 50%
+          </button>
+        </div>
       </div>
 
-      <div class="insufficient-warning" *ngIf="walletBalance < paymentAmount && paymentAmount > 0">
-        <span class="warning-icon">⚠️</span>
-        <span>Insufficient wallet balance. Please recharge your wallet.</span>
+      <!-- Payment Summary -->
+      <div class="payment-breakdown">
+        <div class="breakdown-row">
+          <span>Total Outstanding:</span>
+          <span class="value">₹{{ getTotalDue() | number:'1.2-2' }}</span>
+        </div>
+        <div class="breakdown-row">
+          <span>Payment Amount:</span>
+          <span class="value highlight">₹{{ paymentAmount | number:'1.2-2' }}</span>
+        </div>
+        <div class="breakdown-row total">
+          <span>Remaining Balance:</span>
+          <span class="value">₹{{ (getTotalDue() - paymentAmount) | number:'1.2-2' }}</span>
+        </div>
       </div>
-      <div class="insufficient-warning warning-amber" *ngIf="paymentAmount > getTotalDue()">
-        <span class="warning-icon">⚠️</span>
-        <span>Payment amount cannot exceed the total due amount.</span>
+
+      <!-- Warning Messages -->
+      <div class="alert alert-warning" *ngIf="walletBalance < paymentAmount && paymentAmount > 0">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <strong>Insufficient Balance</strong>
+          <p>Your wallet balance is insufficient. Please recharge your wallet to proceed.</p>
+        </div>
       </div>
+
+      <div class="alert alert-info" *ngIf="paymentAmount > getTotalDue()">
+        <i class="fas fa-info-circle"></i>
+        <div>
+          <strong>Amount Exceeds Due</strong>
+          <p>Payment amount cannot exceed the total outstanding balance.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeWalletModal()">
+        Cancel
+      </button>
+      <button class="btn-primary" (click)="confirmPayment()"
+        [disabled]="walletBalance < paymentAmount || paymentAmount <= 0 || isProcessingPayment || paymentAmount > getTotalDue()">
+        <i class="fas fa-lock" *ngIf="!isProcessingPayment"></i>
+        <i class="fas fa-spinner fa-spin" *ngIf="isProcessingPayment"></i>
+        {{ isProcessingPayment ? 'Processing Payment...' : 'Confirm & Pay' }}
+      </button>
     </div>
   </div>
 </div>
