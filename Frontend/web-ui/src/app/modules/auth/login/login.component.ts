@@ -11,26 +11,27 @@ import { UserLoginRequestModel } from '../UserLoginRequestModel';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
- isLoading: boolean = false;
+  isLoading: boolean = false;
   form: UntypedFormGroup;
   model: UserLoginRequestModel = {
-    email : "",
-    password : ""
+    email: "",
+    password: ""
   };
-  constructor(private authService: AuthService,   private fb: UntypedFormBuilder, private router: Router){
+  constructor(private authService: AuthService, private fb: UntypedFormBuilder, private router: Router) {
     this.form = this.fb.group({
       email: ['', Validators.required],
       password: ['', Validators.required],
+      rememberMe: [false]
     })
   }
 
   ngOnInit(): void {
 
   }
-  onSubmit(): void{
+  onSubmit(): void {
     if (this.form.valid) {
       this.isLoading = true;
-      this.model  = this.form.value;
+      this.model = this.form.value;
       this.authService.authenticate(this.model);
       this.isLoading = false;
     }

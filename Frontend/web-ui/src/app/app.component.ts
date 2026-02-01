@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { TokenValidator } from './helpers/TokenValidator';
+import { SidebarService } from './services/sidebar.service';
 
 @Component({
   selector: 'app-root',
@@ -9,10 +10,15 @@ import { TokenValidator } from './helpers/TokenValidator';
 })
 export class AppComponent {
   title = 'adminpanel';
-  constructor(private router: Router) { }
+  sidebarVisible$ = this.sidebarService.sidebarVisible$;
+
+  constructor(private router: Router, public sidebarService: SidebarService) { }
 
   ngOnInit(): void {
     this.reloadToLogin();
+    this.router.events.subscribe(() => {
+      this.sidebarService.closeSidebar();
+    });
   }
 
   reloadToLogin(): any {

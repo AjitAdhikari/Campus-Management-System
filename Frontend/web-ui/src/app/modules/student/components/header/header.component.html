@@ -1,5 +1,9 @@
 <nav class="navbar navbar-expand navbar-light navbar-bg">
-	<span class="header-left-username d-none d-md-inline-flex align-items-center ms-3">{{ greeting }}, <strong>{{ userName }}</strong></span>
+	<button class="sidebar-toggle btn me-2 d-flex align-items-center" (click)="toggleSidebar()">
+		<i class="fas fa-bars"></i>
+	</button>
+	<span class="header-left-username d-none d-md-inline-flex align-items-center ms-1">{{ greeting }}, <strong>{{
+			userName }}</strong></span>
 
 	<ul class="navbar-nav d-none d-lg-flex">
 	</ul>
@@ -7,23 +11,24 @@
 	<div class="navbar-collapse collapse">
 		<ul class="navbar-nav navbar-align">
 			<li class="nav-item date-time-nav">
-				<div class="position-relative date-time" >
+				<div class="position-relative date-time">
 					<span class="date">{{ date }}</span>
 					<span class="time">{{ time }}</span>
 				</div>
 			</li>
 			<li class="nav-item nav-right-item ms-auto d-flex align-items-center">
 				<a class="nav-icon pe-md-0 dropdown-toggle" href="#" data-bs-toggle="dropdown">
-					<img [src]="avatarSrc" class="avatar img-fluid rounded" [alt]="userName">
+					<img *ngIf="hasAvatar" [src]="avatarSrc" class="avatar img-fluid rounded" [alt]="userName">
+					<div *ngIf="!hasAvatar" class="avatar-header-placeholder"><i class="fas fa-user"></i></div>
 				</a>
 				<div class="dropdown-menu dropdown-menu-end">
 					<div class="dropdown-item-text">
 						<strong>{{ userName }}</strong>
 					</div>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" [routerLink]="getSettingsRoute()"> View Profile</a>
+					<a class="dropdown-item" [routerLink]="getSettingsRoute()"> Student Profile</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" (click)="logOut()">Logout</a>
+					<a class="dropdown-item" (click)="logOut()">Sign Out</a>
 				</div>
 			</li>
 		</ul>

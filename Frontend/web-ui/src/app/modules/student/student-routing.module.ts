@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../../helpers/AuthGuard';
 
+import { ChatComponent } from '../chat/chat.component';
 import { PageSettingComponent } from '../setting/page-setting/page-setting.component';
 import { AssignmentsComponent } from './pages/assignments/assignments.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
@@ -23,6 +24,7 @@ const routes: Routes = [
       { path: 'results', component: ResultsComponent },
       { path: 'notices', component: NoticeComponent },
       { path: 'fees', component: FeesComponent },
+      { path: 'chat', component: ChatComponent },
       { path: 'setting', component: PageSettingComponent }
     ]
   }

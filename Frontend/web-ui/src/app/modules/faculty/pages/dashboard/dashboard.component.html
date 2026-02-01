@@ -1,14 +1,18 @@
 <div class="dashboard-root">
 	<main class="dashboard-grid">
 		<section class="panel my-courses">
-			<h3 class="panel-title">My Assigned Courses</h3>
+			<h3 class="panel-title">Instructional Responsibility</h3>
 			<div class="courses-grid" *ngIf="courses.length > 0">
 				<div *ngFor="let course of courses" class="course-card" (click)="openSyllabus(course)">
 					<div class="course-icon">
 						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M12 14l9-5-9-5-9 5 9 5z" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M12 14v7" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M12 14l9-5-9-5-9 5 9 5z" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"
+								stroke-linejoin="round" />
+							<path
+								d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+								stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+							<path d="M12 14v7" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round"
+								stroke-linejoin="round" />
 						</svg>
 					</div>
 					<div class="course-info">
@@ -21,15 +25,17 @@
 					</div>
 				</div>
 			</div>
-			<p class="muted small" *ngIf="courses.length === 0" style="padding: 20px 0; text-align: center; color: #6b7280;">
+			<p class="muted small" *ngIf="courses.length === 0"
+				style="padding: 20px 0; text-align: center; color: #6b7280;">
 				Course Loading ....
 			</p>
 		</section>
 
 		<section class="panel upcoming-schedule">
-			<h3 class="panel-title">Upcoming Classes</h3>
+			<h3 class="panel-title">Lecture Schedule</h3>
 			<div class="schedule-list" *ngIf="schedules.length > 0; else noSchedules">
-				<div *ngFor="let schedule of schedules" class="schedule-item" [class.today]="isToday(schedule.class_date)" [routerLink]="['/faculty/schedule']">
+				<div *ngFor="let schedule of schedules" class="schedule-item"
+					[class.today]="isToday(schedule.class_date)" [routerLink]="['/faculty/schedule']">
 					<div class="schedule-time">
 						<div class="time-label">{{ schedule.start_time.substring(0, 5) }}</div>
 						<div class="time-separator">-</div>
@@ -39,16 +45,22 @@
 						<h4 class="schedule-course">{{ schedule.course?.course_name || 'Unknown Course' }}</h4>
 						<div class="schedule-meta">
 							<span class="schedule-date">
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
-									<path d="M8 2v4M16 2v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+									xmlns="http://www.w3.org/2000/svg">
+									<rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor"
+										stroke-width="1.5" />
+									<path d="M8 2v4M16 2v4M3 10h18" stroke="currentColor" stroke-width="1.5"
+										stroke-linecap="round" />
 								</svg>
 								{{ schedule.class_date | date: 'MMM d, yyyy' }}
 							</span>
 							<span class="schedule-room" *ngIf="schedule.room">
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-									<path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+									xmlns="http://www.w3.org/2000/svg">
+									<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor"
+										stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+									<path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.5"
+										stroke-linecap="round" stroke-linejoin="round" />
 								</svg>
 								Room {{ schedule.room }}
 							</span>
@@ -62,14 +74,18 @@
 		</section>
 
 		<section class="panel recent-submissions">
-			<h3 class="panel-title">Recently Submitted Assignments</h3>
+			<h3 class="panel-title">Pending Academic Submissions</h3>
 			<div class="submissions-list" *ngIf="recentSubmissions.length > 0; else noSubmissions">
-				<div *ngFor="let submission of recentSubmissions" class="submission-card" [routerLink]="['/faculty/assignments']">
+				<div *ngFor="let submission of recentSubmissions" class="submission-card"
+					[routerLink]="['/faculty/assignments']">
 					<div class="submission-icon">
 						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M9 12l2 2 4-4" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M14 2v6h6" stroke="#059669" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M9 12l2 2 4-4" stroke="#059669" stroke-width="2" stroke-linecap="round"
+								stroke-linejoin="round" />
+							<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#059669"
+								stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+							<path d="M14 2v6h6" stroke="#059669" stroke-width="1.5" stroke-linecap="round"
+								stroke-linejoin="round" />
 						</svg>
 					</div>
 					<div class="submission-info">
@@ -77,9 +93,11 @@
 						<p class="submission-assignment">{{ submission.assignmentTitle || 'Assignment' }}</p>
 						<div class="submission-meta">
 							<span class="submission-time">
-								<svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-									<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-									<path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+								<svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+									xmlns="http://www.w3.org/2000/svg">
+									<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+									<path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2"
+										stroke-linecap="round" />
 								</svg>
 								{{ submission.submitted_at | date: 'MMM d, h:mm a' }}
 							</span>
@@ -96,10 +114,11 @@
 		</section>
 
 		<aside class="panel announcements">
-			<h3 class="panel-title">Latest Announcements</h3>
+			<h3 class="panel-title">Faculty Communiqués</h3>
 			<ul class="ann-list" *ngIf="announcements.length > 0; else noAnnouncements">
 				<li *ngFor="let announcement of announcements" class="ann-item">
-					<a class="ann-link" [routerLink]="['/faculty/notices']" [queryParams]="{ noticeId: announcement.id }">
+					<a class="ann-link" [routerLink]="['/faculty/notices']"
+						[queryParams]="{ noticeId: announcement.id }">
 						<strong>{{ announcement.title }}</strong>
 						<p class="ann-preview">{{ announcement.description?.substring(0, 60) || '' }}...</p>
 						<span class="ann-date">{{ announcement.notice_date | date: 'short' }}</span>
@@ -129,10 +148,8 @@
 				<p><strong>Department:</strong> {{ selectedCourse?.department }}</p>
 			</div>
 			<div class="syllabus-viewer" *ngIf="selectedCourse?.syllabus_path; else noSyllabus">
-				<iframe [src]="getSyllabusUrl(selectedCourse?.syllabus_path) | safe: 'resourceUrl'" 
-						width="100%" 
-						height="500px"
-						frameborder="0">
+				<iframe [src]="getSyllabusUrl(selectedCourse?.syllabus_path) | safe: 'resourceUrl'" width="100%"
+					height="500px" height="500px" frameborder="0">
 				</iframe>
 			</div>
 			<ng-template #noSyllabus>
@@ -142,7 +159,8 @@
 		<div class="modal-footer" *ngIf="selectedCourse?.syllabus_path">
 			<button class="btn-download" (click)="downloadSyllabus()">
 				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor"
+						stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 				</svg>
 				Download Syllabus
 			</button>
@@ -152,7 +170,8 @@
 </div>
 
 
-<div class="modal fade" [class.show]="showClockInModal" [style.display]="showClockInModal ? 'block' : 'none'" tabindex="-1">
+<div class="modal fade" [class.show]="showClockInModal" [style.display]="showClockInModal ? 'block' : 'none'"
+	tabindex="-1">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -162,12 +181,13 @@
 			<div class="modal-body text-center py-4">
 				<div class="mb-3">
 					<svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<circle cx="12" cy="12" r="10" stroke="#4f46e5" stroke-width="2"/>
-						<path d="M12 6v6l4 2" stroke="#4f46e5" stroke-width="2" stroke-linecap="round"/>
+						<circle cx="12" cy="12" r="10" stroke="#4f46e5" stroke-width="2" />
+						<path d="M12 6v6l4 2" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" />
 					</svg>
 				</div>
 				<p class="mb-2">Please clock in to mark your attendance for today.</p>
-				<p class="text-muted small">{{ currentDate | date:'fullDate' }} - {{ currentDate | date:'shortTime' }}</p>
+				<p class="text-muted small">{{ currentDate | date:'fullDate' }} - {{ currentDate | date:'shortTime' }}
+				</p>
 			</div>
 			<div class="modal-footer justify-content-center">
 				<button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="clockingIn">
@@ -175,7 +195,7 @@
 				</button>
 				<button type="button" class="btn btn-primary" (click)="clockIn()" [disabled]="clockingIn">
 					<span *ngIf="clockingIn" class="spinner-border spinner-border-sm me-2"></span>
-					Clock In Now
+					Initialize Daily Attendance
 				</button>
 			</div>
 		</div>

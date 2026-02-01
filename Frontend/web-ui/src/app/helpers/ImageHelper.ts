@@ -1,20 +1,15 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { tap } from "rxjs";
-import { environment } from "src/environments/environment";
 
-@Injectable({providedIn : 'root'})
-export class ImageHelper
-{
+@Injectable({ providedIn: 'root' })
+export class ImageHelper {
     fileName = " ";
 
-    constructor( private  _http : HttpClient ) {}
+    constructor(private _http: HttpClient) { }
 
-    fileUpload(event : any)
-    {
-        const file : File = event.target.files[0];
-        if(file)
-        {
+    fileUpload(event: any) {
+        const file: File = event.target.files[0];
+        if (file) {
             this.fileName = file.name;
             const formData = new FormData();
             formData.append("image", file);
@@ -31,5 +26,6 @@ export class ImageHelper
             // });
             return formData;
         }
+        return null;
     }
 }

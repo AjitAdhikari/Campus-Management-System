@@ -1,80 +1,107 @@
 <div class="dashboard-root">
-	<main class="dashboard-grid">
-		<section class="panel my-courses">
-			<h3 class="panel-title">My Courses</h3>
-			<div class="courses-grid" *ngIf="courses.length > 0; else noCourses">
-				<div *ngFor="let course of courses" class="course-card" (click)="openSyllabus(course)">
-					<div class="course-icon">
-						<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M12 14l9-5-9-5-9 5 9 5z" stroke="#0f766e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" stroke="#0f766e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M12 14l9-5v6" stroke="#0f766e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-						</svg>
-					</div>
-					<div class="course-info">
-						<h4 class="course-name">{{ course.course_name }}</h4>
-						<p class="course-code">{{ course.course_code }}</p>
-						<div class="course-meta">
-							<span class="course-semester">Semester {{ course.semester }}</span>
-							<span class="course-credit">{{ course.credit }} Credits</span>
-						</div>
-					</div>
-				</div>
-			</div>
-			<ng-template #noCourses>
-				<p class="muted small">No courses enrolled yet.</p>
-			</ng-template>
-		</section>
+    <main class="dashboard-grid">
+        <section class="panel my-courses">
+            <h3 class="panel-title">Enrolled Subjects</h3>
+            <div class="courses-grid" *ngIf="courses.length > 0; else noCourses">
+                <div *ngFor="let course of courses" class="course-card" (click)="openSyllabus(course)">
+                    <div class="course-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 14l9-5-9-5-9 5 9 5z" stroke="#0f766e" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path
+                                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+                                stroke="#0f766e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M12 14l9-5v6" stroke="#0f766e" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="course-info">
+                        <h4 class="course-name">{{ course.course_name }}</h4>
+                        <p class="course-code">{{ course.course_code }}</p>
+                        <div class="course-meta">
+                            <span class="course-semester">Semester {{ course.semester }}</span>
+                            <span class="course-credit">{{ course.credit }} Credits</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ng-template #noCourses>
+                <p class="muted small">No courses enrolled yet.</p>
+            </ng-template>
 
-		<section class="panel due-assignments">
-			<h3 class="panel-title">Due Assignments</h3>
-			<div class="assignments-list" *ngIf="assignments.length > 0; else noAssignments">
-				<div *ngFor="let assignment of assignments" class="assignment-card" [routerLink]="['/student/assignments']">
-					<div class="assignment-header">
-						<div class="assignment-icon">
-							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-								<path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-							</svg>
-						</div>
-						<div class="assignment-info">
-							<h4 class="assignment-title">{{ assignment.title }}</h4>
-							<p class="assignment-course">{{ assignment.course?.course_name || 'Unknown Course' }}</p>
-						</div>
-					</div>
-					<div class="assignment-footer">
-						<span class="due-date" [class.due-soon]="isDueSoon(assignment.due_date)">
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-								<path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-							</svg>
-							Due: {{ assignment.due_date | date: 'MMM d, h:mm a' }}
-						</span>
-					</div>
-				</div>
-			</div>
-			<ng-template #noAssignments>
-				<p class="muted small">No pending assignments.</p>
-			</ng-template>
-		</section>
+            <!-- Inline Syllabus Viewer -->
+            <section class="panel syllabus-viewer-panel" *ngIf="selectedCourse">
+                <h3 class="panel-title">{{ selectedCourse.course_name }} - Syllabus</h3>
+                <div class="course-details">
+                    <p><strong>Course Code:</strong> {{ selectedCourse.course_code }}</p>
+                    <p><strong>Credits:</strong> {{ selectedCourse.credit }}</p>
+                    <p><strong>Semester:</strong> {{ selectedCourse.semester }}</p>
+                    <p><strong>Department:</strong> {{ selectedCourse.department }}</p>
+                </div>
+                <div *ngIf="selectedCourse.syllabus_path; else noSyllabus">
+                    <iframe [src]="getSyllabusUrl(selectedCourse.syllabus_path) | safe: 'resourceUrl'" width="100%" height="500px" frameborder="0"></iframe>
+                </div>
+                <ng-template #noSyllabus>
+                    <p class="no-syllabus">No syllabus available for this course.</p>
+                </ng-template>
+            </section>
+        </section>
 
-		<aside class="panel announcements">
-			<h3 class="panel-title">Latest Announcements</h3>
-			<ul class="ann-list" *ngIf="announcements.length > 0; else noAnnouncements">
-				<li *ngFor="let announcement of announcements" class="ann-item">
-					<a class="ann-link" [routerLink]="['/student/notices']" [queryParams]="{ noticeId: announcement.id }">
-						<strong>{{ announcement.title }}</strong>
-						<p class="ann-preview">{{ announcement.description?.substring(0, 60) || '' }}...</p>
-						<span class="ann-date">{{ announcement.notice_date | date: 'short' }}</span>
-					</a>
-				</li>
-			</ul>
-			<ng-template #noAnnouncements>
-				<p class="muted small">No announcements available.</p>
-			</ng-template>
-			<p class="muted small">See the notice board for full details.</p>
-		</aside>
-	</main>
+        <section class="panel due-assignments">
+            <h3 class="panel-title">Pending Assignments</h3>
+            <div class="assignments-list" *ngIf="assignments.length > 0; else noAssignments">
+                <div *ngFor="let assignment of assignments" class="assignment-card"
+                    [routerLink]="['/student/assignments']">
+                    <div class="assignment-header">
+                        <div class="assignment-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#dc2626"
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="#dc2626" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="assignment-info">
+                            <h4 class="assignment-title">{{ assignment.title }}</h4>
+                            <p class="assignment-course">{{ assignment.course?.course_name || 'Unknown Course' }}</p>
+                        </div>
+                    </div>
+                    <div class="assignment-footer">
+                        <span class="due-date" [class.due-soon]="isDueSoon(assignment.due_date)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            Due: {{ assignment.due_date | date: 'MMM d, h:mm a' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <ng-template #noAssignments>
+                <p class="muted small">No pending assignments.</p>
+            </ng-template>
+        </section>
+
+        <aside class="panel announcements">
+            <h3 class="panel-title">Campus Notices</h3>
+            <ul class="ann-list" *ngIf="announcements.length > 0; else noAnnouncements">
+                <li *ngFor="let announcement of announcements" class="ann-item">
+                    <a class="ann-link" [routerLink]="['/student/notices']"
+                        [queryParams]="{ noticeId: announcement.id }">
+                        <strong>{{ announcement.title }}</strong>
+                        <p class="ann-preview">{{ announcement.description?.substring(0, 60) || '' }}...</p>
+                        <span class="ann-date">{{ announcement.notice_date | date: 'short' }}</span>
+                    </a>
+                </li>
+            </ul>
+            <ng-template #noAnnouncements>
+                <p class="muted small">No announcements available.</p>
+            </ng-template>
+            <p class="muted small">See the notice board for full details.</p>
+        </aside>
+    </main>
 </div>
 
 <!-- Syllabus Modal -->

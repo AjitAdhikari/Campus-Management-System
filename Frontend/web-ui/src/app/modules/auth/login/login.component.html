@@ -1,59 +1,73 @@
-
-<main class="d-flex w-100">
-  <div class="container d-flex flex-column">
-      <div class="row vh-100">
-          <div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
-              <div class="d-table-cell align-middle">
-
-                  <div class="text-center mt-4">
-
-                      <p class="lead">
-                          Sign in to your account to continue
-                      </p>
-                  </div>
-
-                  <div class="card">
-
-                      <div class="card-body">
-                          <div class="m-sm-4">
-                            <!-- <img src="../assets/img/SUSHI.jpeg" height="250px" width="250px" class="center"> -->
-
-                            <form [formGroup]="form" (ngSubmit)="onSubmit()" >
-                                  <div class="mb-3">
-                                      <label class="form-label">Email Address</label>
-                                      <input required="required"  formControlName="email" placeholder="Enter your email" type="text" class="form-control  form-control-lg">
-                                      <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        <div *ngIf="form.get('email')?.invalid && (form.get('email')?.dirty || form.get('email')?.touched)">
-                                          <div *ngIf="form.get('email')?.errors?.required">email is required.</div>
-                                        </div>
-                                      </div>
-                                  </div>
-                                  <div class="mb-3">
-                                      <label class="form-label">Password</label>
-                                      <input type = "password" required="required" formControlName = "password"
-                                      placeholder="Enter your password" class="form-control">
-                                      <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                                        <div *ngIf="form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)">
-                                          <div *ngIf="form.get('password')?.errors?.required">Password is required.</div>
-                                        </div>
-                                      </div>
-
-                                  </div>
-                                  <div>
-                                  </div>
-                                  <div class="text-center mt-3">
-                                      <button type="submit" [disabled]="isLoading"
-                                              class="btn btn-lg btn-primary">
-                                          Login
-                                      </button>
-                                  </div>
-                                </form>
-                          </div>
-                      </div>
-                  </div>
-
-              </div>
-          </div>
+<div class="login-container">
+  <!-- Left Panel: Welcome Section -->
+  <div class="welcome-panel">
+    <div class="welcome-content">
+      <div class="logo-section">
+        <div class="logo-icon">
+          <i class="fas fa-graduation-cap"></i>
+        </div>
+        <span class="logo-text">CAMPUS MANAGEMENT</span>
       </div>
+
+      <div class="welcome-text">
+        <h1>Welcome to Academic Portal</h1>
+        <p>Access your institutional dashboard to manage courses, track academic progress, and connect with the
+          university community.</p>
+      </div>
+
+      <div class="decorative-quote">
+        <i class="fas fa-quote-left"></i>
+        <p>Empowering Education Through Technology</p>
+      </div>
+    </div>
+
+    <div class="wave-decoration">
+      <svg viewBox="0 0 500 150" preserveAspectRatio="none">
+        <path d="M0,100 C150,150 350,0 500,80 L500,150 L0,150 Z" fill="rgba(255,255,255,0.1)"></path>
+      </svg>
+    </div>
   </div>
-</main>
+
+  <!-- Right Panel: Login Form -->
+  <div class="form-panel">
+    <div class="form-wrapper">
+      <div class="form-header">
+        <h2>Login</h2>
+        <p>Welcome! Login to access your academic dashboard and institutional resources.</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" formControlName="email" placeholder="Enter your email address" class="form-input">
+          <div class="error-message"
+            *ngIf="form.get('email')?.invalid && (form.get('email')?.dirty || form.get('email')?.touched)">
+            <span *ngIf="form.get('email')?.errors?.required">Email is required</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" formControlName="password" placeholder="Enter your password" class="form-input">
+          <div class="error-message"
+            *ngIf="form.get('password')?.invalid && (form.get('password')?.dirty || form.get('password')?.touched)">
+            <span *ngIf="form.get('password')?.errors?.required">Password is required</span>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" formControlName="rememberMe">
+            <span class="checkmark"></span>
+            <span class="label-text">Remember me</span>
+          </label>
+        </div>
+
+        <button type="submit" class="login-btn" [disabled]="isLoading">
+          <span *ngIf="!isLoading">LOGIN</span>
+          <span *ngIf="isLoading"><i class="fas fa-spinner fa-spin"></i> Signing in...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,14 +1,20 @@
-<div class="wrapper">
+<div class="wrapper" [class.sidebar-collapsed]="!(sidebarVisible$ | async)">
   <app-admin-sidebar *ngIf="isLoggedIn() && isAdminRoute()"></app-admin-sidebar>
   <app-faculty-sidebar *ngIf="isLoggedIn() && isFacultyRoute()"></app-faculty-sidebar>
   <app-student-sidebar *ngIf="isLoggedIn() && isStudentRoute()"></app-student-sidebar>
-  <div class="main">
+
+  <!-- Mobile Sidebar Backdrop -->
+  <div class="sidebar-backdrop" *ngIf="sidebarVisible$ | async" (click)="sidebarService.closeSidebar()"></div>
+
+  <div class="main-content">
     <app-header *ngIf="!isLoginRoute() && isAdminRoute()"></app-header>
     <app-faculty-header *ngIf="!isLoginRoute() && isFacultyRoute()"></app-faculty-header>
     <app-student-header *ngIf="!isLoginRoute() && isStudentRoute()"></app-student-header>
-    <main class="content">
+
+    <main class="inner-content">
       <router-outlet></router-outlet>
     </main>
+
     <app-footer *ngIf="!isLoginRoute()"></app-footer>
   </div>
 </div>

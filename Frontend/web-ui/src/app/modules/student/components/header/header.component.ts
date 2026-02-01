@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { SidebarService } from 'src/app/services/sidebar.service';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
@@ -10,7 +11,8 @@ import { UserService } from 'src/app/services/user.service';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   userName = 'User';
-  avatarSrc = '/assets/images/user-avatar.png';
+  avatarSrc: string | null = null;
+  hasAvatar = false;
   time: string = '';
   date: string = '';
   userRole: string = 'student';
@@ -18,7 +20,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private timerId: any;
   private sub?: Subscription;
 
-  constructor(private router: Router, private userService: UserService) { }
+  constructor(
+    private router: Router,
+    private userService: UserService,
+    private sidebarService: SidebarService
+  ) { }
+
+  toggleSidebar() {
+    this.sidebarService.toggleSidebar();
+  }
 
   ngOnInit(): void {
     this.updateTime();
@@ -28,6 +38,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       if (u) {
         this.userName = u.name || this.userName;
         this.avatarSrc = this.resolveAvatar(u.avatar);
+        this.hasAvatar = !!u.avatar;
       }
     });
   }
@@ -70,8 +81,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   }
 
-  private resolveAvatar(avatar: string | undefined | null): string {
-    if (!avatar) return '/assets/images/user-avatar.png';
+  private resolveAvatar(avatar: string | undefined | null): string | null {
+    if (!avatar) return null;
     if (/^(https?:)?\/\//.test(avatar) || avatar.startsWith('data:')) return avatar;
     if (avatar.startsWith('/')) return avatar;
     return window.location.origin + '/storage/' + avatar;
@@ -86,7 +97,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return '/admin/setting';
   }
 
-  logOut(){
+  logOut() {
     localStorage.clear();
     this.router.navigate(['app-login']);
   }

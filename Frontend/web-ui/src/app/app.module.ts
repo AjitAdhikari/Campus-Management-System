@@ -20,6 +20,7 @@ import { StudentSidebarComponent } from './modules/student/components/student-si
 
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ToastrModule } from 'ngx-toastr';
+import { ChatModule } from './modules/chat/chat.module';
 import { SettingModule } from './modules/setting/setting.module';
 
 
@@ -47,6 +48,7 @@ export function init_app(appLoadService: AppConfigInitService) {
     LayoutModule,
     // FinanceModule,
     SettingModule,
+    ChatModule,
     HttpClientModule,
     BrowserAnimationsModule,
     ToastrModule.forRoot(),
