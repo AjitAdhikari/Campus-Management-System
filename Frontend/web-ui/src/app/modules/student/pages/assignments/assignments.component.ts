@@ -80,9 +80,20 @@ export class AssignmentsComponent implements OnInit {
     }
   }
 
+  isOverdue(assignment: Assignment): boolean {
+    if (assignment.is_submitted) return false;
+    return new Date(assignment.due_date) < new Date();
+  }
+
   submitAssignment() {
     if (!this.selectedAssignment || !this.selectedFile) {
       alert('Please select a file to submit');
+      return;
+    }
+
+    if (this.isOverdue(this.selectedAssignment)) {
+      alert('Cannot submit assignment: The due date has passed.');
+      this.closeSubmitModal();
       return;
     }
 
@@ -93,6 +104,8 @@ export class AssignmentsComponent implements OnInit {
           alert('Assignment submitted successfully');
           this.loadAssignments();
           this.closeSubmitModal();
+        } else {
+          alert('Failed to submit: ' + (response.message || 'Unknown error'));
         }
         this.loading = false;
       },

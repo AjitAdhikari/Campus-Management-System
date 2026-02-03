@@ -79,7 +79,7 @@ export class AccountComponent implements OnInit {
       }
 
       // Validate file size - max 5MB
-      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+      const maxSizeInBytes = 5 * 1024 * 1024;
       if (file.size > maxSizeInBytes) {
         this.toastr.error('Image size must be less than 5MB!');
         input.value = ''; // Clear the input

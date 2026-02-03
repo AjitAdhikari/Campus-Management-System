@@ -42,7 +42,8 @@
 						</td>
 						<td>
 							<button class="link-btn" type="button" (click)="openSubmitModal(assignment)"
-								[disabled]="loading">
+								[disabled]="loading || (!assignment.is_submitted && getStatus(assignment) === 'Overdue')"
+								[title]="(!assignment.is_submitted && getStatus(assignment) === 'Overdue') ? 'Cannot submit because due date has passed' : ''">
 								{{ assignment.is_submitted ? 'View Submission' : 'Submit' }}
 							</button>
 							<button class="link-btn" type="button" *ngIf="assignment.attachment"
