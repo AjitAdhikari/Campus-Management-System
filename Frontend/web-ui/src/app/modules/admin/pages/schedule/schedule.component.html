@@ -128,12 +128,17 @@
                 <label for="courseId">Course *</label>
                 <select id="courseId" formControlName="course_id" class="form-control">
                     <option value="">Select a course</option>
-                    <option *ngFor="let course of courses" [value]="course.id">{{ course.course_name }} ({{ course.course_code }})</option>
+                    <option *ngFor="let course of courses" [value]="course.id">{{ course.course_name }} ({{
+                        course.course_code }})</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="classDate">Class Date *</label>
-                <input type="date" id="classDate" formControlName="class_date" class="form-control" />
+                <input type="date" id="classDate" formControlName="class_date" class="form-control" [min]="minDate" />
+                <div *ngIf="scheduleForm.errors?.['pastDate'] && scheduleForm.get('class_date')?.touched"
+                    style="color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem;">
+                    ⚠️ Class date cannot be in the past
+                </div>
             </div>
 
             <div class="form-row">
@@ -149,6 +154,14 @@
                     <label for="endTime">End Time *</label>
                     <input type="time" id="endTime" formControlName="end_time" class="form-control" />
                 </div>
+            </div>
+            <div *ngIf="scheduleForm.errors?.['invalidTimeRange'] && (scheduleForm.get('start_time')?.touched || scheduleForm.get('end_time')?.touched)"
+                style="color: #dc3545; font-size: 0.875rem; margin-top: 0.5rem;">
+                ⚠️ End time must be after start time
+            </div>
+            <div *ngIf="scheduleForm.errors?.['pastDateTime'] && (scheduleForm.get('start_time')?.touched || scheduleForm.get('class_date')?.touched)"
+                style="color: #dc3545; font-size: 0.875rem; margin-top: 0.5rem;">
+                ⚠️ Cannot schedule for a time that has already passed
             </div>
         </form>
 
@@ -173,7 +186,8 @@
         </div>
 
         <div class="modal-info">
-            Editing schedule for: <strong>{{ selectedSchedule.course?.course_name }} ({{ selectedSchedule.course?.course_code }})</strong>
+            Editing schedule for: <strong>{{ selectedSchedule.course?.course_name }} ({{
+                selectedSchedule.course?.course_code }})</strong>
         </div>
 
         <form [formGroup]="editForm" class="modal-form">
@@ -189,12 +203,18 @@
                 <label for="courseIdEdit">Course *</label>
                 <select id="courseIdEdit" formControlName="course_id" class="form-control">
                     <option value="">Select a course</option>
-                    <option *ngFor="let course of courses" [value]="course.id">{{ course.course_name }} ({{ course.course_code }})</option>
+                    <option *ngFor="let course of courses" [value]="course.id">{{ course.course_name }} ({{
+                        course.course_code }})</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="classDateEdit">Class Date *</label>
-                <input type="date" id="classDateEdit" formControlName="class_date" class="form-control" />
+                <input type="date" id="classDateEdit" formControlName="class_date" class="form-control"
+                    [min]="minDate" />
+                <div *ngIf="editForm.errors?.['pastDate'] && editForm.get('class_date')?.touched"
+                    style="color: #dc3545; font-size: 0.875rem; margin-top: 0.25rem;">
+                    ⚠️ Class date cannot be in the past
+                </div>
             </div>
 
             <div class="form-row">
@@ -210,6 +230,14 @@
                     <label for="endTimeEdit">End Time *</label>
                     <input type="time" id="endTimeEdit" formControlName="end_time" class="form-control" />
                 </div>
+            </div>
+            <div *ngIf="editForm.errors?.['invalidTimeRange'] && (editForm.get('start_time')?.touched || editForm.get('end_time')?.touched)"
+                style="color: #dc3545; font-size: 0.875rem; margin-top: 0.5rem;">
+                ⚠️ End time must be after start time
+            </div>
+            <div *ngIf="editForm.errors?.['pastDateTime'] && (editForm.get('start_time')?.touched || editForm.get('class_date')?.touched)"
+                style="color: #dc3545; font-size: 0.875rem; margin-top: 0.5rem;">
+                ⚠️ Cannot schedule for a time that has already passed
             </div>
         </form>
 

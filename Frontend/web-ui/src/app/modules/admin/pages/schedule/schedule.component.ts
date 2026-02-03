@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Course, CourseService } from '../../../../services/course.service';
 import { ClassSchedule, CreateScheduleRequest, ScheduleService, UpdateScheduleRequest } from '../../../../services/schedule.service';
 import { User, UserService } from '../../../../services/user.service';
@@ -11,11 +11,11 @@ import { User, UserService } from '../../../../services/user.service';
 })
 export class ScheduleComponent implements OnInit {
   schedules: ClassSchedule[] = [];
-  
+
   // Form controls
   scheduleForm!: FormGroup;
   editForm!: FormGroup;
-  
+
   // UI States
   isLoading = false;
   showAddModal = false;
@@ -23,12 +23,13 @@ export class ScheduleComponent implements OnInit {
   selectedSchedule: ClassSchedule | null = null;
   successMessage = '';
   errorMessage = '';
-  
+
   // Data for dropdowns
   courses: Course[] = [];
   allCourses: Course[] = [];
   faculties: User[] = [];
   facultyCourses: Course[] = [];
+  minDate: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -40,9 +41,15 @@ export class ScheduleComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.setMinDate();
     this.loadSchedules();
     this.loadCourses();
     this.loadFaculties();
+  }
+
+  setMinDate(): void {
+    const today = new Date();
+    this.minDate = today.toISOString().split('T')[0];
   }
 
   initializeForms(): void {
@@ -53,7 +60,7 @@ export class ScheduleComponent implements OnInit {
       start_time: ['', Validators.required],
       end_time: ['', Validators.required],
       isActive: [true]
-    });
+    }, { validators: [this.timeRangeValidator(), this.dateValidator(), this.dateTimeValidator()] });
 
     this.editForm = this.fb.group({
       course_id: [{ value: '', disabled: true }, Validators.required],
@@ -62,7 +69,7 @@ export class ScheduleComponent implements OnInit {
       start_time: ['', Validators.required],
       end_time: ['', Validators.required],
       isActive: [true]
-    });
+    }, { validators: [this.timeRangeValidator(), this.dateValidator(), this.dateTimeValidator()] });
   }
 
   loadSchedules(): void {
@@ -97,7 +104,7 @@ export class ScheduleComponent implements OnInit {
   loadFaculties(): void {
     this.userService.list().subscribe({
       next: (data: User[]) => {
-        this.faculties = data.filter((user: User) => 
+        this.faculties = data.filter((user: User) =>
           user.roles.includes('Faculty') || user.roles.includes('faculty')
         );
       },
@@ -165,7 +172,15 @@ export class ScheduleComponent implements OnInit {
 
   createSchedule(): void {
     if (this.scheduleForm.invalid) {
-      this.errorMessage = 'Please fill all required fields';
+      if (this.scheduleForm.errors?.['invalidTimeRange']) {
+        this.errorMessage = 'End time must be after start time.';
+      } else if (this.scheduleForm.errors?.['pastDate']) {
+        this.errorMessage = 'Class date cannot be in the past.';
+      } else if (this.scheduleForm.errors?.['pastDateTime']) {
+        this.errorMessage = 'Cannot schedule for a time that has already passed.';
+      } else {
+        this.errorMessage = 'Please fill all required fields';
+      }
       return;
     }
 
@@ -190,6 +205,10 @@ export class ScheduleComponent implements OnInit {
         let errorMsg = 'Failed to create schedule. Please try again.';
         if (error.error?.message) {
           errorMsg = error.error.message;
+        } else if (error.error?.errors?.faculty_id) {
+          errorMsg = error.error.errors.faculty_id[0];
+        } else if (error.error?.errors?.start_time) {
+          errorMsg = error.error.errors.start_time[0];
         } else if (error.message) {
           errorMsg = error.message;
         }
@@ -200,7 +219,15 @@ export class ScheduleComponent implements OnInit {
 
   updateSchedule(): void {
     if (this.editForm.invalid || !this.selectedSchedule) {
-      this.errorMessage = 'Please fill all required fields';
+      if (this.editForm.errors?.['invalidTimeRange']) {
+        this.errorMessage = 'End time must be after start time.';
+      } else if (this.editForm.errors?.['pastDate']) {
+        this.errorMessage = 'Class date cannot be in the past.';
+      } else if (this.editForm.errors?.['pastDateTime']) {
+        this.errorMessage = 'Cannot schedule for a time that has already passed.';
+      } else {
+        this.errorMessage = 'Please fill all required fields';
+      }
       return;
     }
 
@@ -221,7 +248,15 @@ export class ScheduleComponent implements OnInit {
         setTimeout(() => this.clearMessages(), 3000);
       },
       error: (error) => {
-        this.errorMessage = 'Failed to update schedule. Please try again.';
+        let errorMsg = 'Failed to update schedule. Please try again.';
+        if (error.error?.message) {
+          errorMsg = error.error.message;
+        } else if (error.error?.errors?.faculty_id) {
+          errorMsg = error.error.errors.faculty_id[0];
+        } else if (error.error?.errors?.start_time) {
+          errorMsg = error.error.errors.start_time[0];
+        }
+        this.errorMessage = errorMsg;
       }
     });
   }
@@ -245,5 +280,79 @@ export class ScheduleComponent implements OnInit {
   clearMessages(): void {
     this.successMessage = '';
     this.errorMessage = '';
+  }
+
+  // Custom validator to ensure end_time is after start_time
+  timeRangeValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const startTime = control.get('start_time')?.value;
+      const endTime = control.get('end_time')?.value;
+
+      if (!startTime || !endTime) {
+        return null; // Don't validate if either field is empty
+      }
+
+      // Convert time strings to comparable format (HH:MM)
+      const start = this.timeToMinutes(startTime);
+      const end = this.timeToMinutes(endTime);
+
+      if (end <= start) {
+        return { invalidTimeRange: true };
+      }
+
+      return null;
+    };
+  }
+
+  // Helper function to convert time string to minutes for comparison
+  private timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  // Custom validator to ensure class_date is not in the past
+  dateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const classDate = control.get('class_date')?.value;
+
+      if (!classDate) {
+        return null; // Don't validate if field is empty
+      }
+
+      const selectedDate = new Date(classDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+
+      if (selectedDate < today) {
+        return { pastDate: true };
+      }
+
+      return null;
+    };
+  }
+
+  // Custom validator to ensure the combined date and time is in the future
+  dateTimeValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const classDate = control.get('class_date')?.value;
+      const startTime = control.get('start_time')?.value;
+
+      if (!classDate || !startTime) {
+        return null; // Don't validate if either field is empty
+      }
+
+      // Combine date and time
+      const [hours, minutes] = startTime.split(':').map(Number);
+      const scheduleDateTime = new Date(classDate);
+      scheduleDateTime.setHours(hours, minutes, 0, 0);
+
+      const now = new Date();
+
+      if (scheduleDateTime <= now) {
+        return { pastDateTime: true };
+      }
+
+      return null;
+    };
   }
 }
