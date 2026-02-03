@@ -68,7 +68,25 @@ export class AccountComponent implements OnInit {
   onAvatarSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length) {
-      this.selectedAvatarFile = input.files[0];
+      const file = input.files[0];
+
+      // Validate file type - only images allowed
+      const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!validImageTypes.includes(file.type)) {
+        this.toastr.error('Only image files (JPEG, PNG, GIF) are allowed!');
+        input.value = ''; // Clear the input
+        return;
+      }
+
+      // Validate file size - max 5MB
+      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSizeInBytes) {
+        this.toastr.error('Image size must be less than 5MB!');
+        input.value = ''; // Clear the input
+        return;
+      }
+
+      this.selectedAvatarFile = file;
       // Show preview
       const reader = new FileReader();
       reader.onload = (e) => {
