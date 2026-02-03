@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { SessionService } from 'src/app/services/session.service';
 import { SidebarService } from 'src/app/services/sidebar.service';
 import { UserService } from 'src/app/services/user.service';
 
@@ -23,7 +24,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private userService: UserService,
-    private sidebarService: SidebarService
+    private sidebarService: SidebarService,
+    private sessionService: SessionService
   ) { }
 
   toggleSidebar() {
@@ -96,7 +98,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logOut() {
+    this.sessionService.destroySession();
     localStorage.clear();
-    this.router.navigate(['app-login']);
+    this.router.navigate(['/login']);
   }
 }

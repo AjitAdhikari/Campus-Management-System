@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { TokenValidator } from './helpers/TokenValidator';
+import { SessionService } from './services/session.service';
 import { SidebarService } from './services/sidebar.service';
 
 @Component({
@@ -12,12 +13,21 @@ export class AppComponent {
   title = 'adminpanel';
   sidebarVisible$ = this.sidebarService.sidebarVisible$;
 
-  constructor(private router: Router, public sidebarService: SidebarService) { }
+  constructor(
+    private router: Router,
+    public sidebarService: SidebarService,
+    private sessionService: SessionService
+  ) { }
 
   ngOnInit(): void {
     this.reloadToLogin();
     this.router.events.subscribe(() => {
       this.sidebarService.closeSidebar();
+    });
+
+    // Listen for logout events from other tabs
+    this.sessionService.logout$.subscribe(() => {
+      console.log('Session terminated - redirecting to login');
     });
   }
 

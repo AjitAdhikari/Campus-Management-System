@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { tap } from 'rxjs';
 import StorageHelper from 'src/app/helpers/StorageHelper';
 import { SettingService } from 'src/app/modules/setting/setting.service';
+import { SessionService } from 'src/app/services/session.service';
 import { UserService } from 'src/app/services/user.service';
 import { environment } from 'src/environments/environment';
 import { UserLoginRequestModel } from './UserLoginRequestModel';
@@ -15,11 +16,12 @@ import { UserLoginRequestModel } from './UserLoginRequestModel';
 export class AuthService {
 
   constructor(
-    private _http: HttpClient, 
-    private _toastr: ToastrService, 
+    private _http: HttpClient,
+    private _toastr: ToastrService,
     private _router: Router,
     private userService: UserService,
-    private settingService: SettingService
+    private settingService: SettingService,
+    private sessionService: SessionService
   ) { }
 
   authenticate(requestModel: UserLoginRequestModel) {
@@ -40,12 +42,15 @@ export class AuthService {
         return;
       }
       StorageHelper.setToken(response.body.token);
-      
+
+      // Create new session for this login
+      this.sessionService.createSession();
+
       let userDetails = response.body.user;
       console.log(userDetails);
       const userId = userDetails?.id || userDetails?.ID;
       const role = (userDetails && userDetails.role) ? String(userDetails.role).toLowerCase() : '';
-      
+
       // Fetch full user profile to get avatar and all details
       if (userId) {
         this.settingService.getUserProfile(userId).subscribe({
@@ -63,7 +68,7 @@ export class AuthService {
         // Fallback if no userId
         this.userService.setUser(userDetails);
       }
-      
+
       if (role === 'admin') {
         this._router.navigate(['/admin/dashboard']);
       } else if (role === 'faculty') {
