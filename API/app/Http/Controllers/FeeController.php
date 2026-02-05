@@ -182,27 +182,16 @@ class FeeController extends Controller
         try {
             $fees = Fee::where('user_id', $user_id)->get();
 
-            // If no fees found in fees table, create a temporary one with fixed amount
+            // Fetch current wallet balance from profile
+            $userProfile = UserProfile::where('user_id', $user_id)->first();
+            $walletBalance = $userProfile ? floatval($userProfile->fees) : 0;
+
+            // If no fees found in fees table, return empty to avoid overriding admin set fees
             if ($fees->isEmpty()) {
-                $user = User::with('profile')->find($user_id);
-
-                if ($user && $user->profile && $user->profile->semesters) {
-                    // Use a FIXED constant for total_fee, NOT the wallet balance
-                    // Wallet balance (user_profiles.fees) changes with payments
-                    // Total fee should always remain 60000
-                    $fixedTotalFee = 60000;
-
-                    // Create a temporary fee record for display
-                    $fees = collect([
-                        [
-                            'user_id' => $user_id,
-                            'semester' => $user->profile->semesters,
-                            'total_fee' => $fixedTotalFee,
-                            'created_at' => now(),
-                            'updated_at' => now()
-                        ]
-                    ]);
-                }
+                return response()->json([
+                    'data' => [],
+                    'wallet_balance' => $walletBalance
+                ], 200);
             }
 
             // Calculate amount paid and due for each semester
@@ -235,7 +224,8 @@ class FeeController extends Controller
             });
 
             return response()->json([
-                'data' => $feesWithDetails
+                'data' => $feesWithDetails,
+                'wallet_balance' => $walletBalance
             ], 200);
         } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
@@ -365,7 +355,7 @@ class FeeController extends Controller
                 $semester = $student->profile->semesters ?? '1';
 
                 // Get total fee for this student/semester
-                $totalFee = 60000; // Default fixed fee
+                $totalFee = 0;
                 $fee = Fee::where('user_id', $student->id)
                     ->where('semester', $semester)
                     ->first();
@@ -400,74 +390,65 @@ class FeeController extends Controller
     }
 
     /**
-     * Send payment invoice email to student
+     * Send payment invoice email with PDF attachment to student and admin
      */
     private function sendInvoiceEmail($user, $feeDetail, $newWalletBalance, $paidAmount)
     {
         try {
-            $studentName = $user->name;
-            $studentEmail = $user->email;
-            $semester = $feeDetail->semester;
-            $paymentDate = $feeDetail->payment_date;
-            $transactionId = $feeDetail->id;
+            $data = [
+                'transaction_id' => $feeDetail->id,
+                'student_name' => $user->name,
+                'student_email' => $user->email,
+                'semester' => $feeDetail->semester,
+                'payment_date' => $feeDetail->payment_date,
+                'amount' => $paidAmount,
+                'wallet_balance' => $newWalletBalance,
+            ];
 
-            Mail::send([], [], function ($message) use ($studentName, $studentEmail, $semester, $paymentDate, $paidAmount, $newWalletBalance, $transactionId) {
+            // Generate PDF from blade template
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.receipt', $data);
+            $pdfContent = $pdf->output();
+
+            $studentEmail = $user->email;
+            $adminEmail = 'admin@cms.com';
+
+            Mail::send([], [], function ($message) use ($user, $pdfContent, $studentEmail, $adminEmail, $data) {
                 $message->to($studentEmail)
-                    ->subject('Payment Invoice - Fee Payment Successful')
+                    ->cc($adminEmail)
+                    ->subject('Payment Receipt - Fee Payment Successful')
+                    ->attachData($pdfContent, 'receipt_' . $data['transaction_id'] . '.pdf', [
+                        'mime' => 'application/pdf',
+                    ])
                     ->html("
                         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;'>
                             <div style='text-align: center; margin-bottom: 30px;'>
-                                <h1 style='color: #4f46e5; margin: 0;'>Payment Invoice</h1>
+                                <h1 style='color: #4f46e5; margin: 0;'>Payment Confirmation</h1>
                                 <p style='color: #6b7280; margin: 5px 0;'>CMS</p>
                             </div>
                             
                             <div style='background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;'>
-                                <h2 style='color: #111827; margin-top: 0;'>Dear {$studentName},</h2>
-                                <p style='color: #374151;'>Your fee payment has been successfully processed. Below are the transaction details:</p>
+                                <h2 style='color: #111827; margin-top: 0;'>Hello {$user->name},</h2>
+                                <p style='color: #374151;'>Thank you for your payment. We have attached your official fee receipt to this email.</p>
                             </div>
                             
-                            <table style='width: 100%; border-collapse: collapse; margin-bottom: 20px;'>
-                                <tr>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600;'>Transaction ID:</td>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827;'>{$transactionId}</td>
-                                </tr>
-                                <tr>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600;'>Student Name:</td>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827;'>{$studentName}</td>
-                                </tr>
-                                <tr>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600;'>Semester:</td>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827;'>{$semester}</td>
-                                </tr>
-                                <tr>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600;'>Payment Date:</td>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827;'>{$paymentDate}</td>
-                                </tr>
-                                <tr>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600;'>Amount Paid:</td>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #10b981; font-weight: 700; font-size: 18px;'>₹" . number_format($paidAmount, 2) . "</td>
-                                </tr>
-                                <tr>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600;'>Remaining Wallet Balance:</td>
-                                    <td style='padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827; font-weight: 600;'>₹" . number_format($newWalletBalance, 2) . "</td>
-                                </tr>
-                            </table>
-                            
+                            <div style='margin-bottom: 20px;'>
+                                <p><strong>Amount Paid:</strong> ₹" . number_format($data['amount'], 2) . "</p>
+                                <p><strong>Transaction ID:</strong> {$data['transaction_id']}</p>
+                            </div>
+
                             <div style='background: #ecfdf5; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 20px;'>
                                 <p style='margin: 0; color: #065f46; font-weight: 600;'>✓ Payment Successful</p>
-                                <p style='margin: 5px 0 0 0; color: #047857; font-size: 14px;'>Your payment has been recorded in our system.</p>
                             </div>
                             
                             <div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;'>
-                                <p style='color: #6b7280; font-size: 12px; margin: 5px 0;'>This is an automated email. Please do not reply.</p>
-                                <p style='color: #6b7280; font-size: 12px; margin: 5px 0;'>For any queries, contact the administration office.</p>
+                                <p style='color: #6b7280; font-size: 12px; margin: 5px 0;'>Please find your formal PDF receipt attached to this email.</p>
                             </div>
                         </div>
                     ");
             });
         } catch (\Exception $e) {
             // Log error but don't fail the payment
-            \Log::error('Failed to send invoice email: ' . $e->getMessage());
+            \Log::error('Failed to send invoice email with PDF: ' . $e->getMessage());
         }
     }
 }

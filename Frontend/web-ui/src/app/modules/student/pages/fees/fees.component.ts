@@ -9,7 +9,7 @@ import { FeeService } from 'src/app/services/fee.service';
 })
 export class FeesComponent implements OnInit {
   pendingFees: any[] = [];
-  walletBalance: number = 60000.00;
+  walletBalance: number = 0;
   showWalletModal: boolean = false;
   paymentAmount: number = 0;
   userId: string = '';
@@ -27,7 +27,7 @@ export class FeesComponent implements OnInit {
     if (userDetails) {
       const user = JSON.parse(userDetails);
       this.userId = user.id;
-      this.walletBalance = parseFloat(user.fees) || 60000.00;
+      this.walletBalance = parseFloat(user.fees) || 0;
     }
   }
 
@@ -37,9 +37,22 @@ export class FeesComponent implements OnInit {
     this.feeService.getFees(this.userId).subscribe({
       next: (response: any) => {
         const fees = response.data || [];
-        
+
+        // Sync wallet balance from server response
+        if (response.wallet_balance !== undefined) {
+          this.walletBalance = response.wallet_balance;
+
+          // Update localStorage to keep it in sync for headers/other components
+          const userDetails = StorageHelper.getLocalStorageItem('_user_details');
+          if (userDetails) {
+            const user = JSON.parse(userDetails);
+            user.fees = this.walletBalance;
+            StorageHelper.setLocalStorageItem('_user_details', JSON.stringify(user));
+          }
+        }
+
         console.log('Loaded fees data:', fees); // Debug log
-        
+
         this.pendingFees = fees.map((fee: any) => ({
           semester: fee.semester,
           feeStatus: fee.status || 'Pending',
@@ -48,7 +61,7 @@ export class FeesComponent implements OnInit {
           balancedAmount: parseFloat(fee.due_amount || 0),
           paidDate: fee.latest_payment_date
         }));
-        
+
         console.log('Processed pending fees:', this.pendingFees); // Debug log
       },
       error: () => {
@@ -115,7 +128,7 @@ export class FeesComponent implements OnInit {
         this.isProcessingPayment = false;
         if (response.new_wallet_balance !== undefined) {
           this.walletBalance = response.new_wallet_balance;
-          
+
           // Update localStorage to persist wallet balance
           const userDetails = StorageHelper.getLocalStorageItem('_user_details');
           if (userDetails) {

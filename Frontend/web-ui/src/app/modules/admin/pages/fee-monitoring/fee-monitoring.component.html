@@ -1,11 +1,17 @@
 <div class="fm-root">
-  <h2>Student Fees Summary</h2>
+  <div class="header-with-tabs">
+    <h2>Fee Monitoring</h2>
+    <div class="view-tabs">
+      <button [class.active]="viewMode === 'summary'" (click)="toggleView('summary')">Fee Summary</button>
+      <button [class.active]="viewMode === 'history'" (click)="toggleView('history')">Payment History</button>
+    </div>
+  </div>
 
   <div class="panel">
     <div class="search-controls">
       <div class="filter-group">
         <label class="filter-label">Filter by Semester</label>
-        <select [(ngModel)]="searchSemester" (change)="filterStudents()" class="filter-select">
+        <select [(ngModel)]="searchSemester" (change)="filterData()" class="filter-select">
           <option value="">All Semesters</option>
           <option *ngFor="let sem of semesterOptions" [value]="sem">Semester {{ sem }}</option>
         </select>
@@ -13,61 +19,92 @@
 
       <div class="filter-group">
         <label class="filter-label">Search by Student Name</label>
-        <input type="text" placeholder="Enter student name..." [(ngModel)]="searchName" (input)="filterStudents()"
+        <input type="text" placeholder="Enter student name..." [(ngModel)]="searchName" (input)="filterData()"
           class="filter-input" />
       </div>
 
       <button class="btn-clear" (click)="clearFilters()" *ngIf="searchName || searchSemester">
         <i class="fas fa-times"></i> Clear Filters
       </button>
+
+      <button class="btn-refresh" (click)="refreshData()" style="margin-left: auto;">
+        <i class="fas fa-sync"></i> Refresh
+      </button>
     </div>
 
-    <div class="results-info">
-      <span class="results-count">Showing {{ filteredStudents.length }} of {{ studentFees.length }} students</span>
+    <!-- Summary View -->
+    <div class="table-container" *ngIf="viewMode === 'summary'">
+      <div class="results-info">
+        <span class="results-count">Showing {{ filteredStudents.length }} student summaries</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="students-table">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Student Name</th>
+              <th>Semester</th>
+              <th>Total Amount</th>
+              <th>Amount Paid</th>
+              <th>Due Payment</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of filteredStudents; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td class="student-name">{{ student.user_name }}</td>
+              <td><span class="semester-badge">Sem {{ student.semester }}</span></td>
+              <td class="amount">₹{{ student.total_amount | number:'1.2-2' }}</td>
+              <td class="amount paid">₹{{ student.amount_paid | number:'1.2-2' }}</td>
+              <td class="amount due">₹{{ student.due_payment | number:'1.2-2' }}</td>
+              <td>
+                <span class="status-badge" [class.paid]="student.due_payment === 0"
+                  [class.pending]="student.due_payment > 0">
+                  {{ student.due_payment === 0 ? 'Paid' : 'Pending' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="filteredStudents.length === 0">
+              <td colspan="7" class="no-results">No records found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div class="table-wrapper">
-      <table class="students-table">
-        <thead>
-          <tr>
-            <th>S.No</th>
-            <th>Student Name</th>
-            <th>Semester</th>
-            <th>Total Amount</th>
-            <th>Amount Paid</th>
-            <th>Due Payment</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let student of filteredStudents; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td class="student-name">{{ student.user_name }}</td>
-            <td><span class="semester-badge">Sem {{ student.semester }}</span></td>
-            <td class="amount">₹{{ student.total_amount | number:'1.2-2' }}</td>
-            <td class="amount paid">₹{{ student.amount_paid | number:'1.2-2' }}</td>
-            <td class="amount due">₹{{ student.due_payment | number:'1.2-2' }}</td>
-            <td>
-              <span class="status-badge" [class.paid]="student.due_payment === 0"
-                [class.pending]="student.due_payment > 0">
-                {{ student.due_payment === 0 ? 'Paid' : 'Pending' }}
-              </span>
-            </td>
-          </tr>
-          <tr *ngIf="filteredStudents.length === 0 && studentFees.length > 0">
-            <td colspan="7" class="no-results">
-              <i class="fas fa-search"></i>
-              <p>No students found matching your search criteria</p>
-            </td>
-          </tr>
-          <tr *ngIf="studentFees.length === 0">
-            <td colspan="7" class="no-results">
-              <i class="fas fa-inbox"></i>
-              <p>Loading student fee records...</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- History View -->
+    <div class="table-container" *ngIf="viewMode === 'history'">
+      <div class="results-info">
+        <span class="results-count">Showing {{ filteredHistory.length }} payment records</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="students-table history-table">
+          <thead>
+            <tr>
+              <th>Trans ID</th>
+              <th>Student Name</th>
+              <th>Semester</th>
+              <th>Amount Paid</th>
+              <th>Payment Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of filteredHistory">
+              <td class="trans-id">#{{ record.id }}</td>
+              <td class="student-name">{{ record.user_name }}</td>
+              <td><span class="semester-badge">Sem {{ record.semester }}</span></td>
+              <td class="amount paid">₹{{ record.amount | number:'1.2-2' }}</td>
+              <td>{{ record.payment_date | date:'mediumDate' }}</td>
+            </tr>
+            <tr *ngIf="filteredHistory.length === 0">
+              <td colspan="5" class="no-results">No payment history found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
