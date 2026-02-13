@@ -1,0 +1,57 @@
+<div class="gpa-calc-page">
+    <section class="panel">
+        <div class="panel-head">
+            <div>
+                <h2 class="page-title">GPA Calculator</h2>
+                <p class="muted">Estimate your SGPA by entering credits and grades.</p>
+            </div>
+        </div>
+
+        <div class="calculator-container">
+            <div class="calc-header">
+                <div class="header-item credit">Credit Hour</div>
+                <div class="header-item grade">Grade</div>
+                <div class="header-item action">
+                    <button class="add-btn" (click)="addSubject()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="subject-rows">
+                <div class="subject-row" *ngFor="let subject of subjects; let i = index">
+                    <div class="row-item credit">
+                        <select [(ngModel)]="subject.creditHours">
+                            <option [value]="-1" disabled selected>Select Credit</option>
+                            <option *ngFor="let c of credits" [value]="c">{{ c }} Credit{{ c > 1 ? 's' : '' }}</option>
+                        </select>
+                    </div>
+                    <div class="row-item grade">
+                        <select [(ngModel)]="subject.gradePoint">
+                            <option [value]="-1" disabled selected>Select Grade</option>
+                            <option *ngFor="let g of grades" [value]="g.value">{{ g.label }} ({{ g.value }})</option>
+                        </select>
+                    </div>
+                    <div class="row-item action">
+                        <button class="remove-btn" (click)="removeSubject(i)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calc-footer">
+                <button class="calculate-btn" (click)="calculateSGPA()">Calculate</button>
+            </div>
+
+            <div class="error-display" *ngIf="errorMessage">
+                <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+            </div>
+
+            <div class="result-display" *ngIf="sgpa !== null">
+                <h3>Estimated SGPA</h3>
+                <div class="sgpa-value">{{ sgpa | number:'1.2-2' }}</div>
+            </div>
+        </div>
+    </section>
+</div>
