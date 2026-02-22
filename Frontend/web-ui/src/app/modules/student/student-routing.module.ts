@@ -7,6 +7,7 @@ import { PageSettingComponent } from '../setting/page-setting/page-setting.compo
 import { AssignmentsComponent } from './pages/assignments/assignments.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { FeesComponent } from './pages/fees/fees.component';
+import { GpaCalculatorComponent } from './pages/gpa-calculator/gpa-calculator.component';
 import { NoticeComponent } from './pages/notice/notice.component';
 import { ResultsComponent } from './pages/results/results.component';
 import { ScheduleComponent } from './pages/schedule/schedule.component';
@@ -24,6 +25,7 @@ const routes: Routes = [
       { path: 'results', component: ResultsComponent },
       { path: 'notices', component: NoticeComponent },
       { path: 'fees', component: FeesComponent },
+      { path: 'gpa-calculator', component: GpaCalculatorComponent },
       { path: 'chat', component: ChatComponent },
       { path: 'setting', component: PageSettingComponent }
     ]
