@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserProfile;
+use App\Models\Fee;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
@@ -54,8 +55,7 @@ class UserController extends Controller
     // POST: Create Document
     public function create(Request $request)
     {
-        try
-        {
+        try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|unique:users,email', // unique in users table
@@ -70,9 +70,9 @@ class UserController extends Controller
             ]);
 
             $entity = new User();
-            $entity->name  = $validated['name'];
+            $entity->name = $validated['name'];
             $entity->email = $validated['email'] ?? null;
-            $entity->active_status  = $validated['active_status'];
+            $entity->active_status = $validated['active_status'];
             $entity->password = Hash::make($validated['password']);
             $entity->save();
 
@@ -85,7 +85,7 @@ class UserController extends Controller
             $user_profile->subjects = $validated['subjects'] ?? null;
             $user_profile->semesters = $validated['semesters'] ?? null;
             $user_profile->department = $validated['department'] ?? null;
-            $user_profile->fees = $validated['fees'] ?? null;
+            $user_profile->fees = $validated['fees'] ?? 60000.00;
 
             // handle optional avatar upload
             if ($request->hasFile('avatar')) {
@@ -96,13 +96,22 @@ class UserController extends Controller
 
             $user_profile->save();
 
-           return response()->json([
+            // If student and fees provided, create a record in fees table for management system
+            if ($validated['role'] === 'Student' && !empty($validated['fees'])) {
+                Fee::create([
+                    'user_id' => $last_inserted_id,
+                    'semester' => $validated['semesters'] ?? '1',
+                    'total_fee' => $validated['fees'],
+                    'created_by' => Auth::id() ?? 1
+                ]);
+            }
+
+            return response()->json([
                 'message' => 'New User Created Successfully',
                 'user_id' => $last_inserted_id
             ], 201);
 
-        } catch(\Exception $ex)
-        {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
         }
     }
@@ -110,10 +119,9 @@ class UserController extends Controller
     // PUT: Update Document (no file upload here, just metadata)
     public function update(Request $request)
     {
-        try
-        {
-          $validated = $request->validate([
-                'id'  => 'required|exists:users,id',
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:users,id',
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email', // unique in users table
                 'active_status' => 'required|integer',
@@ -127,9 +135,9 @@ class UserController extends Controller
             ]);
 
             $entity = User::findOrFail($validated['id']);
-            $entity->name  = $validated['name'];
+            $entity->name = $validated['name'];
             $entity->email = $validated['email'] ?? $entity->email;
-            $entity->active_status  = $validated['active_status'] ?? $entity->active_status;
+            $entity->active_status = $validated['active_status'] ?? $entity->active_status;
             // $entity->password = Hash::make($validated['password']);
             $entity->updated_at = now();
             $entity->save();
@@ -154,17 +162,30 @@ class UserController extends Controller
 
             $user_profile->save();
 
-           return response()->json([
+            // If student and fees provided, update or create record in fees table
+            if (($validated['role'] ?? $user_profile->role) === 'Student' && isset($validated['fees'])) {
+                Fee::updateOrCreate(
+                    [
+                        'user_id' => $entity->id,
+                        'semester' => $validated['semesters'] ?? $user_profile->semesters ?? '1',
+                    ],
+                    [
+                        'total_fee' => $validated['fees'],
+                        'updated_by' => Auth::id() ?? 1
+                    ]
+                );
+            }
+
+            return response()->json([
                 'message' => 'User Updated Successfully',
                 'user_id' => $last_inserted_id
             ], 201);
 
-        } catch(\Exception $ex)
-        {
+        } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 400);
         }
 
-      
+
     }
 
     // DELETE: Delete Document by ID
@@ -184,7 +205,7 @@ class UserController extends Controller
     public function get($id)
     {
         try {
-           $user = DB::table('users')
+            $user = DB::table('users')
                 ->leftJoin('user_profiles', 'users.id', '=', 'user_profiles.user_id')
                 ->where('users.id', $id)
                 ->select(

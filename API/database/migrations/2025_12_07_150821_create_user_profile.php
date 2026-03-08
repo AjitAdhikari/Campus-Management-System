@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -19,7 +18,7 @@ return new class extends Migration
             $table->string('avatar')->nullable(); // profile image path
             $table->string('semesters')->nullable();
             $table->string('department')->nullable();
-            $table->decimal('fees', 10, 2)->nullable();
+            $table->decimal('fees', 10, 2)->default(60000.00)->nullable();
             $table->timestamps();
         });
     }
