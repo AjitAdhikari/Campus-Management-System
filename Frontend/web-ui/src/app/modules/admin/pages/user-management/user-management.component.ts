@@ -22,6 +22,7 @@ export class UserManagementComponent implements OnInit {
   roleFilter = 'Admin';
   semesterFilter: number | null = null;
   departmentFilter: string | null = null;
+  showPassword = false; // Toggle for password visibility
   loading = false;
   errorMessage = '';
 
@@ -34,7 +35,7 @@ export class UserManagementComponent implements OnInit {
   loadingFacultyData = false;
 
   constructor(
-    private courseService: CourseService, 
+    private courseService: CourseService,
     private userService: UserService,
     private assignmentService: AssignmentService,
     private attendanceService: AttendanceService
@@ -46,13 +47,13 @@ export class UserManagementComponent implements OnInit {
         this.courses = courses;
       },
     });
-    
+
     this.courseService.getDepartments().subscribe({
       next: (departments) => {
         this.departments = departments.map(d => d.name);
       },
     });
-    
+
     this.loadUsers();
   }
 
@@ -264,7 +265,7 @@ export class UserManagementComponent implements OnInit {
         this.loadUsers();
       },
       error: (err: any) => {
-         alert('User saved but failed to assign course.');
+        alert('User saved but failed to assign course.');
         this.loading = false;
         this.closeForm();
         this.loadUsers();

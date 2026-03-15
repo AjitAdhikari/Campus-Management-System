@@ -248,3 +248,64 @@
         min-width: auto
     }
 }
+
+/* Validation & Icon Styles */
+.error-msg {
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: 6px;
+    margin-left: 2px;
+}
+
+.input-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-wrapper input {
+    width: 100%;
+    padding-left: 42px;
+    /* Space for left icon */
+    padding-right: 12px;
+    transition: all 0.2s;
+}
+
+.input-icon-wrapper input.has-suffix {
+    padding-right: 40px;
+    /* Space for right icon (password toggle) */
+}
+
+/* Error State */
+.input-icon-wrapper input.error {
+    background-color: #FEF2F2;
+    border-color: #EF4444;
+    color: #991B1B;
+}
+
+.input-icon-wrapper input.error:focus {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+    border-color: #EF4444;
+}
+
+/* Icons */
+.input-icon {
+    position: absolute;
+    left: 12px;
+    width: 20px;
+    height: 20px;
+    color: #9CA3AF;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.input-icon.suffix {
+    left: auto;
+    right: 12px;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.input-icon-wrapper input.error~.input-icon {
+    color: #EF4444;
+}

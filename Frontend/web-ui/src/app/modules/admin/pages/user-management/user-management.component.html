@@ -4,9 +4,9 @@
             <h2>Create Users</h2>
         </div>
         <!-- New conditional filters below the header for students -->
-        
+
         <div class="um-actions">
-            
+
             <div class="role-tabs">
                 <button class="tab" [class.active]="roleFilter === 'Admin'" (click)="setRoleFilter('Admin')">Admin ({{
                     countByRole('Admin') }})</button>
@@ -21,17 +21,17 @@
         </div>
     </header>
     <div *ngIf="roleFilter === 'Student'" class="student-filters">
-            <select [(ngModel)]="semesterFilter" class="filter">
-                <option [ngValue]="null">All Semesters</option>
-                <option *ngFor="let n of [1,2,3,4,5,6,7,8]" [ngValue]="n">Semester {{ n }}</option>
-            </select>
-            <select [(ngModel)]="departmentFilter" class="filter">
-                <option [ngValue]="null">All Departments</option>
-                <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
-            </select>
-        </div>
-    <input *ngIf="roleFilter !== 'Student'" type="text" placeholder="Search by name or email"
-                [(ngModel)]="searchTerm" class="search" />
+        <select [(ngModel)]="semesterFilter" class="filter">
+            <option [ngValue]="null">All Semesters</option>
+            <option *ngFor="let n of [1,2,3,4,5,6,7,8]" [ngValue]="n">Semester {{ n }}</option>
+        </select>
+        <select [(ngModel)]="departmentFilter" class="filter">
+            <option [ngValue]="null">All Departments</option>
+            <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+        </select>
+    </div>
+    <input *ngIf="roleFilter !== 'Student'" type="text" placeholder="Search by name or email" [(ngModel)]="searchTerm"
+        class="search" />
 
     <section class="um-table panel">
         <div *ngIf="errorMessage" class="muted">{{ errorMessage }}</div>
@@ -121,35 +121,99 @@
             <!-- common fields -->
             <div class="form-row">
                 <label>Name</label>
-                <input required [(ngModel)]="tempUser.name" placeholder="Full name" />
+                <div class="input-icon-wrapper">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <input required pattern="[a-zA-Z ]*" [(ngModel)]="tempUser.name" #uName="ngModel"
+                        placeholder="Full name" [class.error]="uName.invalid && (uName.dirty || uName.touched)" />
+                </div>
+                <div *ngIf="uName.invalid && (uName.dirty || uName.touched)" class="error-msg">
+                    <span *ngIf="uName.errors?.['required']">Name is required</span>
+                    <span *ngIf="uName.errors?.['pattern']">Name should only contain letters</span>
+                </div>
             </div>
             <div class="form-row">
                 <label>Email</label>
-                <input type="email" required [(ngModel)]="tempUser.email" placeholder="user@example.com" />
+                <div class="input-icon-wrapper">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <input type="email" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+                        [(ngModel)]="tempUser.email" #uEmail="ngModel" placeholder="user@example.com"
+                        [class.error]="uEmail.invalid && (uEmail.dirty || uEmail.touched)" />
+                </div>
+                <div *ngIf="uEmail.invalid && (uEmail.dirty || uEmail.touched)" class="error-msg">
+                    Please enter a valid email address
+                </div>
             </div>
             <div class="form-row" *ngIf="!editing">
                 <label>Password</label>
-                <input type="password" required [(ngModel)]="tempUser.password" placeholder="Set password" />
+                <div class="input-icon-wrapper">
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <input [type]="showPassword ? 'text' : 'password'" required minlength="8"
+                        [(ngModel)]="tempUser.password" #uPass="ngModel" placeholder="Set password" class="has-suffix"
+                        [class.error]="uPass.invalid && (uPass.dirty || uPass.touched)" />
+                    <!-- Eye Icon Toggle -->
+                    <svg class="input-icon suffix" (click)="showPassword = !showPassword" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <ng-container *ngIf="!showPassword">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </ng-container>
+                        <ng-container *ngIf="showPassword">
+                            <path
+                                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                            </path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </ng-container>
+                    </svg>
+                </div>
+                <div *ngIf="uPass.invalid && (uPass.dirty || uPass.touched)" class="error-msg">
+                    <span *ngIf="uPass.errors?.['required']">Password is required</span>
+                    <span *ngIf="uPass.errors?.['minlength']">Password must be at least 8 characters</span>
+                </div>
             </div>
 
             <!-- Student specific -->
             <div *ngIf="currentAddRole === 'Student' || (editing && tempUser.roles?.includes('Student'))">
                 <div class="form-row">
                     <label>Semester</label>
-                    <select required [(ngModel)]="tempUser.semester">
+                    <select required [(ngModel)]="tempUser.semester" #uSem="ngModel"
+                        [class.error]="uSem.invalid && (uSem.dirty || uSem.touched)">
                         <option *ngFor="let n of [1,2,3,4,5,6,7,8]" [ngValue]="n">Semester {{ n }}</option>
                     </select>
+                    <div *ngIf="uSem.invalid && (uSem.dirty || uSem.touched)" class="error-msg">
+                        Semester is required.
+                    </div>
                 </div>
                 <div class="form-row">
                     <label>Department</label>
-                    <select required [(ngModel)]="tempUser.department">
+                    <select required [(ngModel)]="tempUser.department" #uDept="ngModel"
+                        [class.error]="uDept.invalid && (uDept.dirty || uDept.touched)">
                         <option [ngValue]="undefined">Select a department</option>
                         <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
                     </select>
+                    <div *ngIf="uDept.invalid && (uDept.dirty || uDept.touched)" class="error-msg">
+                        Department is required.
+                    </div>
                 </div>
                 <div class="form-row">
                     <label>Fees</label>
-                    <input type="number" min="0" step="1" required [(ngModel)]="tempUser.fees" placeholder="0" />
+                    <input type="number" min="0" step="1" required [(ngModel)]="tempUser.fees" #uFees="ngModel"
+                        placeholder="0" [class.error]="uFees.invalid && (uFees.dirty || uFees.touched)" />
+                    <div *ngIf="uFees.invalid && (uFees.dirty || uFees.touched)" class="error-msg">
+                        Fees are required.
+                    </div>
                 </div>
             </div>
 
@@ -157,29 +221,41 @@
             <div *ngIf="currentAddRole === 'Faculty' || (editing && tempUser.roles?.includes('Faculty'))">
                 <div class="form-row">
                     <label>Department</label>
-                    <select required [(ngModel)]="tempUser.department">
+                    <select required [(ngModel)]="tempUser.department" #fDept="ngModel"
+                        [class.error]="fDept.invalid && (fDept.dirty || fDept.touched)">
                         <option [ngValue]="undefined">Select a department</option>
                         <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
                     </select>
+                    <div *ngIf="fDept.invalid && (fDept.dirty || fDept.touched)" class="error-msg">
+                        Department is required.
+                    </div>
                 </div>
                 <div class="form-row">
                     <label>Course/Subject</label>
-                    <select required [(ngModel)]="tempUser.subjects" [disabled]="!tempUser.department">
+                    <select required [(ngModel)]="tempUser.subjects" #fSub="ngModel" [disabled]="!tempUser.department"
+                        [class.error]="fSub.invalid && (fSub.dirty || fSub.touched)">
                         <option [ngValue]="undefined">Select a course</option>
                         <option *ngFor="let course of filteredCoursesByDepartment" [ngValue]="course.course_name">{{
                             course.course_name }}
                         </option>
                     </select>
+                    <div *ngIf="fSub.invalid && (fSub.dirty || fSub.touched)" class="error-msg">
+                        Course is required.
+                    </div>
                 </div>
             </div>
 
             <!-- status placed just above actions -->
             <div class="form-row">
                 <label>Status</label>
-                <select required [(ngModel)]="tempUser.status">
+                <select required [(ngModel)]="tempUser.status" #uStatus="ngModel"
+                    [class.error]="uStatus.invalid && (uStatus.dirty || uStatus.touched)">
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                 </select>
+                <div *ngIf="uStatus.invalid && (uStatus.dirty || uStatus.touched)" class="error-msg">
+                    Status is required.
+                </div>
             </div>
             <div class="form-actions">
                 <button class="btn" (click)="closeForm()">Cancel</button>
